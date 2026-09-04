@@ -1,0 +1,1064 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <title>Style Transfer - Stylomera</title>
+
+    <link
+        href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css"
+        rel="stylesheet"
+    >
+
+    <link
+        href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css"
+        rel="stylesheet"
+    >
+
+    <link
+        href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Orbitron:wght@500;600;700;800&display=swap"
+        rel="stylesheet"
+    >
+
+    <style>
+        * {
+            box-sizing: border-box;
+        }
+
+        body {
+            margin: 0;
+            min-height: 100vh;
+            background:
+                radial-gradient(circle at 20% 20%, rgba(110, 70, 255, 0.16), transparent 30%),
+                radial-gradient(circle at 80% 70%, rgba(0, 220, 255, 0.10), transparent 30%),
+                #05060b;
+            color: #ffffff;
+            font-family: 'Inter', sans-serif;
+            overflow-x: hidden;
+        }
+
+        /* Neural background */
+        #neuralCanvas {
+            position: fixed;
+            inset: 0;
+            width: 100%;
+            height: 100%;
+            z-index: -5;
+            opacity: 0.55;
+        }
+
+        .orb {
+            position: fixed;
+            border-radius: 50%;
+            filter: blur(80px);
+            pointer-events: none;
+            z-index: -4;
+        }
+
+        .orb-one {
+            width: 300px;
+            height: 300px;
+            top: 5%;
+            left: -100px;
+            background: rgba(105, 60, 255, 0.18);
+        }
+
+        .orb-two {
+            width: 350px;
+            height: 350px;
+            right: -120px;
+            bottom: 5%;
+            background: rgba(0, 220, 255, 0.12);
+        }
+
+        .scanlines {
+            position: fixed;
+            inset: 0;
+            pointer-events: none;
+            z-index: 20;
+            opacity: 0.035;
+            background: repeating-linear-gradient(
+                to bottom,
+                transparent 0px,
+                transparent 3px,
+                #ffffff 4px
+            );
+        }
+
+        /* Navbar */
+        .navbar {
+            background: rgba(5, 6, 11, 0.72);
+            backdrop-filter: blur(18px);
+            border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+        }
+
+        .brand {
+            font-family: 'Orbitron', sans-serif;
+            font-weight: 800;
+            letter-spacing: 2px;
+            color: #ffffff;
+            text-decoration: none;
+        }
+
+        .brand span {
+            color: #8d6cff;
+        }
+
+        .nav-link {
+            color: rgba(255, 255, 255, 0.7) !important;
+            transition: 0.25s ease;
+        }
+
+        .nav-link:hover {
+            color: #ffffff !important;
+        }
+
+        /* Main */
+        .main-container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 110px 20px 70px;
+        }
+
+        .page-heading {
+            text-align: center;
+            margin-bottom: 45px;
+        }
+
+        .page-heading .eyebrow {
+            font-family: 'Orbitron', sans-serif;
+            font-size: 12px;
+            letter-spacing: 4px;
+            color: #9b83ff;
+            margin-bottom: 14px;
+        }
+
+        .page-heading h1 {
+            font-family: 'Orbitron', sans-serif;
+            font-size: clamp(30px, 5vw, 55px);
+            font-weight: 800;
+            margin-bottom: 15px;
+            letter-spacing: 1px;
+        }
+
+        .page-heading p {
+            max-width: 650px;
+            margin: auto;
+            color: rgba(255, 255, 255, 0.62);
+            line-height: 1.7;
+        }
+
+        /* Alerts */
+        .alert {
+            max-width: 800px;
+            margin: 0 auto 25px;
+            border-radius: 14px;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        /* Main card */
+        .transfer-card {
+            background: rgba(12, 14, 24, 0.76);
+            border: 1px solid rgba(255, 255, 255, 0.09);
+            border-radius: 24px;
+            padding: 35px;
+            backdrop-filter: blur(20px);
+            box-shadow: 0 25px 80px rgba(0, 0, 0, 0.35);
+        }
+
+        .upload-column {
+            height: 100%;
+        }
+
+        .upload-box {
+            position: relative;
+            min-height: 310px;
+            border: 1px dashed rgba(255, 255, 255, 0.2);
+            border-radius: 20px;
+            background: rgba(255, 255, 255, 0.025);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            overflow: hidden;
+            transition: 0.3s ease;
+        }
+
+        .upload-box:hover {
+            border-color: rgba(141, 108, 255, 0.65);
+            background: rgba(141, 108, 255, 0.04);
+        }
+
+        .upload-content {
+            text-align: center;
+            padding: 25px;
+            width: 100%;
+        }
+
+        .upload-icon {
+            width: 65px;
+            height: 65px;
+            margin: 0 auto 18px;
+            border-radius: 18px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background: rgba(141, 108, 255, 0.12);
+            color: #9b83ff;
+            font-size: 25px;
+        }
+
+        .upload-title {
+            font-family: 'Orbitron', sans-serif;
+            font-size: 16px;
+            margin-bottom: 8px;
+        }
+
+        .upload-description {
+            color: rgba(255, 255, 255, 0.5);
+            font-size: 13px;
+            margin-bottom: 20px;
+        }
+
+        .custom-file-label {
+            display: inline-block;
+            padding: 10px 20px;
+            border-radius: 50px;
+            border: 1px solid rgba(255, 255, 255, 0.15);
+            background: rgba(255, 255, 255, 0.05);
+            color: #ffffff;
+            cursor: pointer;
+            font-size: 13px;
+            transition: 0.25s ease;
+        }
+
+        .custom-file-label:hover {
+            background: rgba(141, 108, 255, 0.15);
+            border-color: rgba(141, 108, 255, 0.5);
+        }
+
+        .hidden-file {
+            display: none;
+        }
+
+        .preview-image {
+            display: none;
+            width: 100%;
+            height: 310px;
+            object-fit: contain;
+            padding: 15px;
+            border-radius: 20px;
+            cursor: pointer;
+        }
+
+        .image-name {
+            display: none;
+            margin-top: 10px;
+            color: rgba(255, 255, 255, 0.55);
+            font-size: 12px;
+            word-break: break-word;
+        }
+
+        /* Labels */
+        .section-label {
+            display: block;
+            font-family: 'Orbitron', sans-serif;
+            font-size: 13px;
+            letter-spacing: 1px;
+            margin-bottom: 14px;
+            color: rgba(255, 255, 255, 0.85);
+        }
+
+        /* Alpha */
+        .alpha-section {
+            margin-top: 35px;
+            padding: 25px;
+            border-radius: 18px;
+            background: rgba(255, 255, 255, 0.025);
+            border: 1px solid rgba(255, 255, 255, 0.07);
+        }
+
+        .alpha-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 15px;
+        }
+
+        .alpha-value {
+            font-family: 'Orbitron', sans-serif;
+            color: #9b83ff;
+            font-size: 14px;
+        }
+
+        .alpha-slider {
+            width: 100%;
+            accent-color: #8d6cff;
+            cursor: pointer;
+        }
+
+        .alpha-description {
+            color: rgba(255, 255, 255, 0.45);
+            font-size: 12px;
+            margin-top: 10px;
+        }
+
+        /* Button */
+        .transfer-button {
+            width: 100%;
+            margin-top: 28px;
+            border: none;
+            border-radius: 14px;
+            padding: 15px 25px;
+            font-family: 'Orbitron', sans-serif;
+            font-weight: 600;
+            letter-spacing: 0.8px;
+            color: #ffffff;
+            background: linear-gradient(135deg, #7254ff, #9b6cff);
+            box-shadow: 0 12px 35px rgba(114, 84, 255, 0.25);
+            transition: 0.3s ease;
+        }
+
+        .transfer-button:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 16px 40px rgba(114, 84, 255, 0.35);
+        }
+
+        .transfer-button:disabled {
+            opacity: 0.7;
+            cursor: not-allowed;
+            transform: none;
+        }
+
+        /* Result */
+        .result-section {
+            margin-top: 45px;
+        }
+
+        .result-card {
+            border-radius: 22px;
+            overflow: hidden;
+            background: rgba(12, 14, 24, 0.76);
+            border: 1px solid rgba(255, 255, 255, 0.09);
+            padding: 25px;
+        }
+
+        .result-image {
+            display: block;
+            width: 100%;
+            max-height: 650px;
+            object-fit: contain;
+            border-radius: 15px;
+            background: rgba(0, 0, 0, 0.2);
+        }
+
+        .download-button {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            margin-top: 20px;
+            padding: 11px 22px;
+            border-radius: 50px;
+            text-decoration: none;
+            color: #ffffff;
+            border: 1px solid rgba(255, 255, 255, 0.15);
+            background: rgba(255, 255, 255, 0.05);
+            transition: 0.25s ease;
+        }
+
+        .download-button:hover {
+            color: #ffffff;
+            background: rgba(141, 108, 255, 0.15);
+            border-color: rgba(141, 108, 255, 0.5);
+        }
+
+        /* Processing */
+        #processingOverlay {
+            display: none;
+            position: fixed;
+            inset: 0;
+            z-index: 100;
+            background: rgba(3, 4, 8, 0.88);
+            backdrop-filter: blur(12px);
+            align-items: center;
+            justify-content: center;
+        }
+
+        .processing-box {
+            width: min(420px, 90%);
+            padding: 40px 30px;
+            text-align: center;
+            border-radius: 24px;
+            background: rgba(15, 17, 29, 0.95);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            box-shadow: 0 30px 100px rgba(0, 0, 0, 0.5);
+        }
+
+        .processing-spinner {
+            width: 55px;
+            height: 55px;
+            margin: 0 auto 22px;
+            border: 3px solid rgba(255, 255, 255, 0.12);
+            border-top-color: #9b83ff;
+            border-radius: 50%;
+            animation: spin 0.9s linear infinite;
+        }
+
+        .processing-title {
+            font-family: 'Orbitron', sans-serif;
+            font-size: 18px;
+            margin-bottom: 10px;
+        }
+
+        .processing-text {
+            color: rgba(255, 255, 255, 0.5);
+            font-size: 13px;
+        }
+
+        @keyframes spin {
+            to {
+                transform: rotate(360deg);
+            }
+        }
+
+        /* Footer */
+        footer {
+            padding: 35px 20px;
+            text-align: center;
+            border-top: 1px solid rgba(255, 255, 255, 0.07);
+            color: rgba(255, 255, 255, 0.4);
+            font-size: 13px;
+        }
+
+        @media (max-width: 768px) {
+            .main-container {
+                padding-top: 90px;
+            }
+
+            .transfer-card {
+                padding: 20px;
+            }
+
+            .upload-box,
+            .preview-image {
+                min-height: 250px;
+                height: 250px;
+            }
+        }
+    </style>
+</head>
+
+<body>
+
+<canvas id="neuralCanvas"></canvas>
+
+<div class="orb orb-one"></div>
+<div class="orb orb-two"></div>
+
+<div class="scanlines"></div>
+
+<!-- Navbar -->
+<nav class="navbar navbar-expand-lg fixed-top">
+    <div class="container-fluid px-4">
+
+        <a href="{{ url_for('index') }}" class="brand">
+            STYLO<span>MERA</span>
+        </a>
+
+        <div class="ms-auto d-flex align-items-center gap-2">
+            <a href="{{ url_for('index') }}" class="nav-link">
+                Home
+            </a>
+
+            <a href="{{ url_for('creations') }}" class="nav-link">
+                My Creations
+            </a>
+
+            <a
+                href="{{ url_for('logout') }}"
+                class="btn btn-sm btn-outline-light rounded-pill px-4 ms-2"
+            >
+                Sign Out
+            </a>
+        </div>
+
+    </div>
+</nav>
+
+
+<!-- Main -->
+<main class="main-container">
+
+    <div class="page-heading">
+        <div class="eyebrow">AI IMAGE TRANSFORMATION</div>
+
+        <h1>STYLE TRANSFER</h1>
+
+        <p>
+            Combine the content of one image with the artistic style
+            of another using Stylomera's neural style transfer engine.
+        </p>
+    </div>
+
+
+    <!-- Flash messages -->
+    {% with messages = get_flashed_messages(with_categories=true) %}
+        {% if messages %}
+            {% for category, message in messages %}
+                <div class="alert alert-{{ category }}">
+                    {{ message }}
+                </div>
+            {% endfor %}
+        {% endif %}
+    {% endwith %}
+
+
+    {% if error %}
+        <div class="alert alert-danger">
+            {{ error }}
+        </div>
+    {% endif %}
+
+
+    <!-- Transfer Card -->
+    <div class="transfer-card">
+
+        <form
+            method="POST"
+            enctype="multipart/form-data"
+            id="uploadForm"
+            action="{{ url_for('style_transfer_page') }}"
+        >
+
+            {{ form.hidden_tag() }}
+
+            <div class="row g-4">
+
+                <!-- Content Image -->
+                <div class="col-lg-6">
+
+                    <div class="upload-column">
+
+                        <label class="section-label">
+                            CONTENT IMAGE
+                        </label>
+
+                        <div class="upload-box" id="contentBox">
+
+                            <div
+                                class="upload-content"
+                                id="contentUploadContent"
+                                {% if content_image %}
+                                    style="display: none;"
+                                {% endif %}
+                            >
+
+                                <div class="upload-icon">
+                                    <i class="fa-solid fa-image"></i>
+                                </div>
+
+                                <div class="upload-title">
+                                    Upload Content
+                                </div>
+
+                                <div class="upload-description">
+                                    Choose the image whose structure you want to preserve.
+                                </div>
+
+                                <label class="custom-file-label">
+                                    <i class="fa-solid fa-upload me-2"></i>
+                                    Choose Image
+
+                                    {{ form.content(
+                                        class="hidden-file",
+                                        id="contentInput",
+                                        accept="image/png,image/jpeg,image/jpg"
+                                    ) }}
+                                </label>
+
+                                <div class="image-name" id="contentName"></div>
+
+                            </div>
+
+                           <img
+                                id="contentPreview"
+                                class="preview-image"
+                                alt="Content preview"
+                                {% if content_image %}
+                                    src="{{ url_for('send_image', filename=content_image) }}"
+                                    style="display: block;"
+                                {% endif %}
+                            >
+
+                        </div>
+
+                    </div>
+
+                </div>
+
+
+                <!-- Style Image -->
+                <div class="col-lg-6">
+
+                    <div class="upload-column">
+
+                        <label class="section-label">
+                            STYLE IMAGE
+                        </label>
+
+                        <div class="upload-box" id="styleBox">
+
+                            <div
+                                class="upload-content"
+                                id="styleUploadContent"
+                                {% if style_image %}
+                                    style="display: none;"
+                                {% endif %}
+                            >
+
+                                <div class="upload-icon">
+                                    <i class="fa-solid fa-palette"></i>
+                                </div>
+
+                                <div class="upload-title">
+                                    Upload Style
+                                </div>
+
+                                <div class="upload-description">
+                                    Choose the artwork whose visual style you want to apply.
+                                </div>
+
+                                <label class="custom-file-label">
+                                    <i class="fa-solid fa-upload me-2"></i>
+                                    Choose Image
+
+                                    {{ form.style(
+                                        class="hidden-file",
+                                        id="styleInput",
+                                        accept="image/png,image/jpeg,image/jpg"
+                                    ) }}
+                                </label>
+
+                                <div class="image-name" id="styleName"></div>
+
+                            </div>
+
+                            <img
+                                id="stylePreview"
+                                class="preview-image"
+                                alt="Style preview"
+                                {% if style_image %}
+                                    src="{{ url_for('send_image', filename=style_image) }}"
+                                    style="display: block;"
+                                {% endif %}
+                            >
+
+                        </div>
+
+                    </div>
+
+                </div>
+
+            </div>
+
+
+            <!-- Alpha -->
+            <div class="alpha-section">
+
+                <div class="alpha-header">
+
+                    <label class="section-label mb-0">
+                        STYLE STRENGTH
+                    </label>
+
+                    <span class="alpha-value" id="alphaValue">
+                        1.00
+                    </span>
+
+                </div>
+
+                {{ form.alpha(
+                    class="alpha-slider",
+                    id="alphaSlider",
+                    min="0",
+                    max="1",
+                    step="0.01"
+                ) }}
+
+                <div class="alpha-description">
+                    0 = original content image &nbsp; • &nbsp;
+                    1 = maximum artistic style
+                </div>
+
+            </div>
+
+
+            <!-- Submit -->
+            {{ form.submit(
+                class="transfer-button",
+                id="transferButton",
+                value="TRANSFER STYLE"
+            ) }}
+
+        </form>
+
+    </div>
+
+
+    <!-- Result -->
+{% if result_image %}
+
+<section class="result-section" id="generatedResult">
+
+    <div class="page-heading mb-4">
+
+        <div class="eyebrow">
+            GENERATED RESULT
+        </div>
+
+        <h2 class="h3">
+            YOUR CREATION
+        </h2>
+
+    </div>
+
+    <div class="result-card">
+
+        <img
+            src="{{ url_for('send_image', filename=result_image) }}"
+            alt="Generated style transfer result"
+            class="result-image"
+        >
+
+        <div class="text-center">
+
+            <a
+                href="{{ url_for('send_image', filename=result_image) }}"
+                download
+                class="download-button"
+            >
+                <i class="fa-solid fa-download"></i>
+                Download Result
+            </a>
+
+        </div>
+
+    </div>
+
+</section>
+
+{% endif %}
+
+</main>
+
+
+<!-- Processing Overlay -->
+<div id="processingOverlay">
+
+    <div class="processing-box">
+
+        <div class="processing-spinner"></div>
+
+        <div class="processing-title">
+            CREATING YOUR ART
+        </div>
+
+        <div class="processing-text">
+            Stylomera is applying the selected artistic style.
+            Please wait...
+        </div>
+
+    </div>
+
+</div>
+
+
+<footer>
+    <div>
+        © 2026 Stylomera — Neural Style Transfer
+    </div>
+</footer>
+
+
+<script>
+
+    /* --------------------------------
+       Image Preview
+    -------------------------------- */
+
+    function setupImagePreview(inputId, previewId, contentId, nameId) {
+
+        const input = document.getElementById(inputId);
+        const preview = document.getElementById(previewId);
+        const uploadContent = document.getElementById(contentId);
+        const imageName = document.getElementById(nameId);
+
+        input.addEventListener("change", function () {
+
+            const file = this.files[0];
+
+            if (!file) {
+                return;
+            }
+
+            const reader = new FileReader();
+
+            reader.onload = function (event) {
+
+                preview.src = event.target.result;
+
+                preview.style.display = "block";
+                uploadContent.style.display = "none";
+
+                imageName.textContent = file.name;
+                imageName.style.display = "block";
+            };
+
+            reader.readAsDataURL(file);
+        });
+    }
+
+
+    setupImagePreview(
+        "contentInput",
+        "contentPreview",
+        "contentUploadContent",
+        "contentName"
+    );
+
+    setupImagePreview(
+        "styleInput",
+        "stylePreview",
+        "styleUploadContent",
+        "styleName"
+    );
+
+
+    /* --------------------------------
+       Allow changing uploaded images
+    -------------------------------- */
+
+    const contentInput =
+        document.getElementById("contentInput");
+
+    const styleInput =
+        document.getElementById("styleInput");
+
+    const contentPreview =
+        document.getElementById("contentPreview");
+
+    const stylePreview =
+        document.getElementById("stylePreview");
+
+
+    contentPreview.addEventListener("click", function () {
+        contentInput.click();
+    });
+
+
+    stylePreview.addEventListener("click", function () {
+        styleInput.click();
+    });
+
+
+    /* --------------------------------
+       Alpha Slider
+    -------------------------------- */
+
+    const alphaSlider = document.getElementById("alphaSlider");
+    const alphaValue = document.getElementById("alphaValue");
+
+    function updateAlpha() {
+
+        alphaValue.textContent =
+            parseFloat(alphaSlider.value).toFixed(2);
+    }
+
+    alphaSlider.addEventListener("input", updateAlpha);
+
+    updateAlpha();
+
+
+    /* --------------------------------
+       Processing Animation
+    -------------------------------- */
+
+    const uploadForm = document.getElementById("uploadForm");
+    const processingOverlay =
+        document.getElementById("processingOverlay");
+
+    const transferButton =
+        document.getElementById("transferButton");
+
+
+    uploadForm.addEventListener("submit", function (event) {
+
+        const contentInput =
+            document.getElementById("contentInput");
+
+        const styleInput =
+            document.getElementById("styleInput");
+
+
+        if (
+            !contentInput.files.length ||
+            !styleInput.files.length
+        ) {
+            return;
+        }
+
+
+        processingOverlay.style.display = "flex";
+
+        transferButton.disabled = true;
+
+        transferButton.value = "PROCESSING...";
+    });
+
+
+    /* --------------------------------
+       Neural Background
+    -------------------------------- */
+
+    const canvas = document.getElementById("neuralCanvas");
+    const ctx = canvas.getContext("2d");
+
+    let nodes = [];
+    let animationFrame;
+
+
+    function resizeCanvas() {
+
+        canvas.width = window.innerWidth;
+        canvas.height = window.innerHeight;
+    }
+
+
+    function createNodes() {
+
+        nodes = [];
+
+        const count =
+            Math.min(65, Math.floor(window.innerWidth / 20));
+
+        for (let i = 0; i < count; i++) {
+
+            nodes.push({
+                x: Math.random() * canvas.width,
+                y: Math.random() * canvas.height,
+                vx: (Math.random() - 0.5) * 0.25,
+                vy: (Math.random() - 0.5) * 0.25,
+                radius: Math.random() * 1.5 + 0.5
+            });
+        }
+    }
+
+
+    function animateNetwork() {
+
+        ctx.clearRect(
+            0,
+            0,
+            canvas.width,
+            canvas.height
+        );
+
+
+        for (let i = 0; i < nodes.length; i++) {
+
+            const node = nodes[i];
+
+            node.x += node.vx;
+            node.y += node.vy;
+
+
+            if (node.x < 0 || node.x > canvas.width) {
+                node.vx *= -1;
+            }
+
+            if (node.y < 0 || node.y > canvas.height) {
+                node.vy *= -1;
+            }
+
+
+            ctx.beginPath();
+
+            ctx.arc(
+                node.x,
+                node.y,
+                node.radius,
+                0,
+                Math.PI * 2
+            );
+
+            ctx.fillStyle = "rgba(150, 130, 255, 0.55)";
+
+            ctx.fill();
+
+
+            for (let j = i + 1; j < nodes.length; j++) {
+
+                const other = nodes[j];
+
+                const dx = node.x - other.x;
+                const dy = node.y - other.y;
+
+                const distance =
+                    Math.sqrt(dx * dx + dy * dy);
+
+
+                if (distance < 130) {
+
+                    ctx.beginPath();
+
+                    ctx.moveTo(node.x, node.y);
+
+                    ctx.lineTo(other.x, other.y);
+
+                    ctx.strokeStyle =
+                        `rgba(150, 130, 255, ${0.12 * (1 - distance / 130)})`;
+
+                    ctx.lineWidth = 0.5;
+
+                    ctx.stroke();
+                }
+            }
+        }
+
+        animationFrame =
+            requestAnimationFrame(animateNetwork);
+    }
+
+
+    resizeCanvas();
+    createNodes();
+    animateNetwork();
+
+
+    window.addEventListener("resize", function () {
+
+        resizeCanvas();
+        createNodes();
+
+    });
+
+
+window.addEventListener("load", function () {
+
+    const generatedResult = document.getElementById("generatedResult");
+
+    if (generatedResult) {
+        setTimeout(function () {
+            generatedResult.scrollIntoView({
+                behavior: "smooth",
+                block: "start"
+            });
+        }, 300);
+    }
+
+});
+
+</script>
+
+</body>
+</html>

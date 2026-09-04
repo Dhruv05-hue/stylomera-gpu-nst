@@ -1,0 +1,673 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <title>Sign In | Stylomera</title>
+
+    <link
+        href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css"
+        rel="stylesheet"
+    >
+
+    <link
+        rel="stylesheet"
+        href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css"
+    >
+
+    <link
+        href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;500;600;700&family=Inter:wght@300;400;500;600&display=swap"
+        rel="stylesheet"
+    >
+
+    <style>
+        :root {
+            --bg: #080d20;
+            --text: #e5e7eb;
+            --muted: #94a3b8;
+            --primary: #818cf8;
+            --secondary: #c084fc;
+            --pink: #f472b6;
+        }
+
+        * {
+            box-sizing: border-box;
+        }
+
+        html,
+        body {
+            min-height: 100%;
+        }
+
+        body {
+            margin: 0;
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 2rem 1rem;
+            font-family: 'Inter', sans-serif;
+            color: var(--text);
+            background:
+                radial-gradient(
+                    circle at 15% 15%,
+                    rgba(99, 102, 241, 0.18),
+                    transparent 32%
+                ),
+                radial-gradient(
+                    circle at 85% 80%,
+                    rgba(192, 132, 252, 0.15),
+                    transparent 30%
+                ),
+                linear-gradient(
+                    135deg,
+                    #080d20 0%,
+                    #0b1026 48%,
+                    #090d1d 100%
+                );
+            overflow-x: hidden;
+        }
+
+        /* Neural background */
+
+        #neuralCanvas {
+            position: fixed;
+            inset: 0;
+            width: 100%;
+            height: 100%;
+            z-index: 0;
+            pointer-events: none;
+            opacity: 0.45;
+        }
+
+        .glow {
+            position: fixed;
+            width: 420px;
+            height: 420px;
+            border-radius: 50%;
+            filter: blur(120px);
+            pointer-events: none;
+            z-index: 0;
+            opacity: 0.18;
+        }
+
+        .glow-one {
+            top: -180px;
+            left: -140px;
+            background: #6366f1;
+        }
+
+        .glow-two {
+            right: -160px;
+            bottom: -180px;
+            background: #c084fc;
+        }
+
+        /* Top branding */
+
+        .top-brand {
+            position: fixed;
+            top: 1.4rem;
+            left: 2rem;
+            z-index: 5;
+        }
+
+        .brand-link {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.55rem;
+            color: #c4b5fd;
+            font-family: 'Orbitron', sans-serif;
+            font-size: 1.25rem;
+            font-weight: 700;
+            letter-spacing: 1px;
+            text-decoration: none;
+        }
+
+        .brand-link i {
+            color: var(--primary);
+        }
+
+        .brand-link span {
+            background: linear-gradient(
+                90deg,
+                #818cf8,
+                #c084fc,
+                #f472b6
+            );
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+
+        /* Login card */
+
+        .login-wrapper {
+            position: relative;
+            z-index: 2;
+            width: 100%;
+            max-width: 470px;
+        }
+
+        .login-card {
+            position: relative;
+            padding: 2.6rem;
+            border-radius: 28px;
+            background:
+                linear-gradient(
+                    145deg,
+                    rgba(25, 34, 66, 0.82),
+                    rgba(11, 17, 39, 0.82)
+                );
+            border: 1px solid rgba(148, 163, 184, 0.18);
+            backdrop-filter: blur(18px);
+            box-shadow:
+                0 30px 80px rgba(0, 0, 0, 0.45),
+                0 0 45px rgba(129, 140, 248, 0.07);
+            overflow: hidden;
+        }
+
+        .login-card::before {
+            content: "";
+            position: absolute;
+            top: 0;
+            left: 12%;
+            width: 76%;
+            height: 1px;
+            background: linear-gradient(
+                90deg,
+                transparent,
+                #818cf8,
+                #c084fc,
+                transparent
+            );
+            box-shadow: 0 0 18px rgba(192, 132, 252, 0.7);
+        }
+
+        .brand-icon {
+            width: 64px;
+            height: 64px;
+            margin: 0 auto 1.2rem;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border-radius: 20px;
+            color: #d8b4fe;
+            font-size: 1.45rem;
+            background:
+                linear-gradient(
+                    135deg,
+                    rgba(99, 102, 241, 0.2),
+                    rgba(192, 132, 252, 0.2)
+                );
+            border: 1px solid rgba(192, 132, 252, 0.24);
+            box-shadow: 0 0 30px rgba(168, 85, 247, 0.12);
+        }
+
+        .login-title {
+            margin-bottom: 0.5rem;
+            color: #f8fafc;
+            font-family: 'Orbitron', sans-serif;
+            font-size: 1.65rem;
+            font-weight: 600;
+            letter-spacing: 0.04em;
+        }
+
+        .login-subtitle {
+            color: var(--muted);
+            font-size: 0.94rem;
+            margin-bottom: 2rem;
+        }
+
+        /* Flash/error messages */
+
+        .flash-message,
+        .error-message {
+            border-radius: 12px;
+            font-size: 0.9rem;
+            padding: 0.8rem 1rem;
+            margin-bottom: 1rem;
+        }
+
+        .flash-message {
+            border: 1px solid rgba(129, 140, 248, 0.28);
+            background: rgba(79, 70, 229, 0.12);
+            color: #c7d2fe;
+        }
+
+        .error-message {
+            border: 1px solid rgba(248, 113, 113, 0.3);
+            background: rgba(127, 29, 29, 0.22);
+            color: #fecaca;
+        }
+
+        /* Form */
+
+        .form-label {
+            color: #cbd5e1;
+            font-size: 0.88rem;
+            font-weight: 500;
+            margin-bottom: 0.5rem;
+        }
+
+        .input-wrapper {
+            position: relative;
+        }
+
+        .input-icon {
+            position: absolute;
+            top: 50%;
+            left: 1rem;
+            transform: translateY(-50%);
+            color: #64748b;
+            font-size: 0.9rem;
+            pointer-events: none;
+            z-index: 2;
+            transition: color 0.25s ease;
+        }
+
+        .form-control {
+            min-height: 50px;
+            padding: 0.75rem 1rem 0.75rem 2.75rem;
+            border-radius: 12px;
+            background: rgba(8, 13, 32, 0.72);
+            border: 1px solid rgba(148, 163, 184, 0.18);
+            color: #f8fafc;
+            transition:
+                border-color 0.25s ease,
+                box-shadow 0.25s ease,
+                background 0.25s ease;
+        }
+
+        .form-control::placeholder {
+            color: #64748b;
+        }
+
+        .form-control:focus {
+            color: #f8fafc;
+            background: rgba(8, 13, 32, 0.88);
+            border-color: #818cf8;
+            box-shadow:
+                0 0 0 3px rgba(129, 140, 248, 0.12),
+                0 0 20px rgba(129, 140, 248, 0.08);
+            outline: none;
+        }
+
+        .input-wrapper:focus-within .input-icon {
+            color: #a5b4fc;
+        }
+
+        /* Login button */
+
+        .btn-login {
+            min-height: 52px;
+            border: none;
+            border-radius: 50px;
+            color: white;
+            font-family: 'Orbitron', sans-serif;
+            font-size: 0.9rem;
+            letter-spacing: 0.06em;
+            background: linear-gradient(
+                135deg,
+                #6366f1,
+                #a855f7
+            );
+            box-shadow:
+                0 12px 28px rgba(124, 58, 237, 0.25);
+            transition:
+                transform 0.25s ease,
+                box-shadow 0.25s ease;
+        }
+
+        .btn-login:hover {
+            color: white;
+            transform: translateY(-2px);
+            box-shadow:
+                0 18px 35px rgba(168, 85, 247, 0.36);
+        }
+
+        .btn-login i {
+            transition: transform 0.25s ease;
+        }
+
+        .btn-login:hover i {
+            transform: translateX(3px);
+        }
+
+        /* Links */
+
+        .account-text {
+            color: #64748b;
+            font-size: 0.9rem;
+        }
+
+        .account-link,
+        .back-link {
+            color: #a5b4fc;
+            text-decoration: none;
+            transition: color 0.2s ease;
+        }
+
+        .account-link {
+            font-weight: 600;
+        }
+
+        .account-link:hover,
+        .back-link:hover {
+            color: #d8b4fe;
+        }
+
+        .back-link {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.45rem;
+            font-size: 0.86rem;
+        }
+
+        .divider {
+            height: 1px;
+            margin: 1.7rem 0 1.2rem;
+            background: linear-gradient(
+                90deg,
+                transparent,
+                rgba(148, 163, 184, 0.18),
+                transparent
+            );
+        }
+
+        .security-note {
+            margin-top: 1.4rem;
+            text-align: center;
+            color: #475569;
+            font-size: 0.75rem;
+        }
+
+        /* Mobile */
+
+        @media (max-width: 575.98px) {
+            body {
+                padding: 5rem 1rem 1.5rem;
+            }
+
+            .top-brand {
+                top: 1.1rem;
+                left: 1.2rem;
+            }
+
+            .brand-link {
+                font-size: 1.05rem;
+            }
+
+            .login-card {
+                padding: 2rem 1.35rem;
+                border-radius: 22px;
+            }
+
+            .login-title {
+                font-size: 1.4rem;
+            }
+        }
+    </style>
+</head>
+
+<body>
+
+    <canvas id="neuralCanvas"></canvas>
+
+    <div class="glow glow-one"></div>
+    <div class="glow glow-two"></div>
+
+    <!-- Brand -->
+    <div class="top-brand">
+        <a href="{{ url_for('index') }}" class="brand-link">
+            <i class="fas fa-brain"></i>
+            <span>STYLOMERA</span>
+        </a>
+    </div>
+
+    <!-- Login -->
+    <main class="login-wrapper">
+
+        <div class="login-card">
+
+            <div class="text-center">
+
+                <div class="brand-icon">
+                    <i class="fas fa-right-to-bracket"></i>
+                </div>
+
+                <h1 class="login-title">
+                    WELCOME BACK
+                </h1>
+
+                <p class="login-subtitle">
+                    Sign in to continue creating with Stylomera.
+                </p>
+
+            </div>
+
+            {% with messages = get_flashed_messages(with_categories=true) %}
+                {% if messages %}
+                    {% for category, message in messages %}
+                        <div class="flash-message" role="alert">
+                            {{ message }}
+                        </div>
+                    {% endfor %}
+                {% endif %}
+            {% endwith %}
+
+            {% if error %}
+                <div class="error-message" role="alert">
+                    {{ error }}
+                </div>
+            {% endif %}
+
+            <form method="POST">
+
+                <div class="mb-3">
+                    <label class="form-label">
+                        Email
+                    </label>
+
+                    <div class="input-wrapper">
+                        <i class="fas fa-envelope input-icon"></i>
+
+                        <input
+                            type="email"
+                            name="email"
+                            class="form-control"
+                            placeholder="Enter your email"
+                            autocomplete="email"
+                            required
+                        >
+                    </div>
+                </div>
+
+                <div class="mb-4">
+                    <label class="form-label">
+                        Password
+                    </label>
+
+                    <div class="input-wrapper">
+                        <i class="fas fa-lock input-icon"></i>
+
+                        <input
+                            type="password"
+                            name="password"
+                            class="form-control"
+                            placeholder="Enter your password"
+                            autocomplete="current-password"
+                            required
+                        >
+                    </div>
+                </div>
+
+                <button
+                    type="submit"
+                    class="btn btn-login w-100"
+                >
+                    SIGN IN
+                    <i class="fas fa-arrow-right ms-2"></i>
+                </button>
+
+            </form>
+
+            <div class="divider"></div>
+
+            <div class="text-center">
+                <span class="account-text">
+                    Don't have an account?
+                </span>
+
+                <a
+                    href="{{ url_for('signup') }}"
+                    class="account-link ms-1"
+                >
+                    Create Account
+                </a>
+            </div>
+
+            <div class="text-center mt-3">
+                <a
+                    href="{{ url_for('index') }}"
+                    class="back-link"
+                >
+                    <i class="fas fa-arrow-left"></i>
+                    Back to Stylomera
+                </a>
+            </div>
+
+            <div class="security-note">
+                <i class="fas fa-shield-halved me-1"></i>
+                Secure authentication for your Stylomera account.
+            </div>
+
+        </div>
+
+    </main>
+
+    <script>
+        /* --------------------------------
+           Neural Background
+        -------------------------------- */
+
+        const canvas = document.getElementById("neuralCanvas");
+        const ctx = canvas.getContext("2d");
+
+        let width;
+        let height;
+        let particles = [];
+
+        function resizeCanvas() {
+            width = canvas.width = window.innerWidth;
+            height = canvas.height = window.innerHeight;
+        }
+
+        class Particle {
+            constructor() {
+                this.x = Math.random() * width;
+                this.y = Math.random() * height;
+                this.vx = (Math.random() - 0.5) * 0.3;
+                this.vy = (Math.random() - 0.5) * 0.3;
+                this.size = Math.random() * 1.8 + 0.7;
+            }
+
+            update() {
+                this.x += this.vx;
+                this.y += this.vy;
+
+                if (this.x < 0 || this.x > width) {
+                    this.vx *= -1;
+                }
+
+                if (this.y < 0 || this.y > height) {
+                    this.vy *= -1;
+                }
+            }
+
+            draw() {
+                ctx.fillStyle = "rgba(167, 139, 250, 0.5)";
+                ctx.beginPath();
+                ctx.arc(
+                    this.x,
+                    this.y,
+                    this.size,
+                    0,
+                    Math.PI * 2
+                );
+                ctx.fill();
+            }
+        }
+
+        function initParticles() {
+            particles = [];
+
+            const particleCount = Math.min(
+                75,
+                Math.floor(window.innerWidth / 20)
+            );
+
+            for (let i = 0; i < particleCount; i++) {
+                particles.push(new Particle());
+            }
+        }
+
+        function animateBackground() {
+            ctx.clearRect(0, 0, width, height);
+
+            particles.forEach((particle, index) => {
+
+                particle.update();
+                particle.draw();
+
+                for (
+                    let j = index + 1;
+                    j < particles.length;
+                    j++
+                ) {
+                    const other = particles[j];
+
+                    const distance = Math.hypot(
+                        particle.x - other.x,
+                        particle.y - other.y
+                    );
+
+                    if (distance < 105) {
+
+                        const opacity =
+                            0.1 * (1 - distance / 105);
+
+                        ctx.strokeStyle =
+                            `rgba(129, 140, 248, ${opacity})`;
+
+                        ctx.lineWidth = 1;
+
+                        ctx.beginPath();
+                        ctx.moveTo(
+                            particle.x,
+                            particle.y
+                        );
+                        ctx.lineTo(
+                            other.x,
+                            other.y
+                        );
+                        ctx.stroke();
+                    }
+                }
+            });
+
+            requestAnimationFrame(animateBackground);
+        }
+
+        resizeCanvas();
+        initParticles();
+        animateBackground();
+
+        window.addEventListener("resize", function () {
+            resizeCanvas();
+            initParticles();
+        });
+    </script>
+
+</body>
+</html>

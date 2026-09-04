@@ -1,0 +1,1114 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <title>Stylomera | AI-Powered Artistic Style Transfer</title>
+
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;500;600;700&family=Inter:wght@300;400;500;600&display=swap" rel="stylesheet">
+
+    <style>
+        :root {
+            --bg: #080d20;
+            --bg-soft: #0d1430;
+            --panel: rgba(17, 25, 52, 0.72);
+            --border: rgba(148, 163, 184, 0.16);
+            --text: #e5e7eb;
+            --muted: #94a3b8;
+            --primary: #818cf8;
+            --secondary: #c084fc;
+            --pink: #f472b6;
+        }
+
+        * {
+            box-sizing: border-box;
+        }
+
+        html {
+            scroll-behavior: smooth;
+        }
+
+        body {
+            margin: 0;
+            font-family: 'Inter', sans-serif;
+            background:
+                radial-gradient(circle at 15% 15%, rgba(99, 102, 241, 0.16), transparent 32%),
+                radial-gradient(circle at 85% 70%, rgba(192, 132, 252, 0.13), transparent 30%),
+                linear-gradient(135deg, #080d20 0%, #0b1026 48%, #090d1d 100%);
+            color: var(--text);
+            min-height: 100vh;
+            overflow-x: hidden;
+        }
+
+        a {
+            text-decoration: none;
+        }
+
+        #neuralCanvas {
+            position: fixed;
+            inset: 0;
+            width: 100%;
+            height: 100%;
+            z-index: 0;
+            pointer-events: none;
+            opacity: 0.45;
+        }
+
+        .background-glow {
+            position: fixed;
+            width: 420px;
+            height: 420px;
+            border-radius: 50%;
+            filter: blur(120px);
+            pointer-events: none;
+            z-index: 0;
+            opacity: 0.18;
+        }
+
+        .glow-one {
+            top: -180px;
+            left: -120px;
+            background: #6366f1;
+        }
+
+        .glow-two {
+            right: -160px;
+            bottom: -180px;
+            background: #c084fc;
+        }
+
+        .page-content {
+            position: relative;
+            z-index: 1;
+        }
+
+        /* Navbar */
+
+        .navbar {
+            background: rgba(7, 12, 30, 0.78);
+            backdrop-filter: blur(18px);
+            border-bottom: 1px solid rgba(255, 255, 255, 0.07);
+            padding: 0.8rem 0;
+        }
+
+        .navbar-brand {
+            font-family: 'Orbitron', sans-serif;
+            font-weight: 700;
+            font-size: 1.45rem;
+            letter-spacing: 1px;
+            color: #c4b5fd !important;
+        }
+
+        .navbar-brand i {
+            color: var(--primary);
+        }
+
+        .navbar-brand span {
+            background: linear-gradient(90deg, #818cf8, #c084fc, #f472b6);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+
+        .nav-link {
+            color: #cbd5e1 !important;
+            font-weight: 500;
+            margin-left: 1rem;
+            position: relative;
+            transition: color 0.25s ease;
+        }
+
+        .nav-link:hover {
+            color: #c4b5fd !important;
+        }
+
+        .nav-link::after {
+            content: "";
+            position: absolute;
+            width: 0;
+            height: 2px;
+            left: 0;
+            bottom: 0;
+            background: linear-gradient(90deg, #818cf8, #c084fc);
+            transition: width 0.25s ease;
+        }
+
+        .nav-link:hover::after {
+            width: 100%;
+        }
+
+        .btn-signin {
+            border: 1px solid rgba(196, 181, 253, 0.65);
+            color: #f8fafc;
+            border-radius: 50px;
+            padding: 0.45rem 1.2rem;
+            margin-left: 1.4rem;
+            transition: all 0.25s ease;
+        }
+
+        .btn-signin:hover {
+            color: white;
+            border-color: #c084fc;
+            background: rgba(168, 85, 247, 0.16);
+            box-shadow: 0 0 20px rgba(168, 85, 247, 0.2);
+        }
+
+        /* Hero */
+
+        .hero-section {
+            min-height: 82vh;
+            display: flex;
+            align-items: center;
+            padding: 8rem 0 5rem;
+            text-align: center;
+        }
+
+        .hero-badge {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.5rem;
+            padding: 0.45rem 1rem;
+            border-radius: 50px;
+            background: rgba(129, 140, 248, 0.08);
+            border: 1px solid rgba(129, 140, 248, 0.22);
+            color: #c4b5fd;
+            font-size: 0.82rem;
+            letter-spacing: 0.08em;
+            text-transform: uppercase;
+            margin-bottom: 1.6rem;
+        }
+
+        .hero-title {
+            font-family: 'Orbitron', sans-serif;
+            font-size: clamp(3rem, 8vw, 6.5rem);
+            font-weight: 700;
+            letter-spacing: 0.05em;
+            margin-bottom: 1.2rem;
+            background: linear-gradient(90deg, #818cf8, #c084fc, #f472b6);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            filter: drop-shadow(0 0 28px rgba(168, 85, 247, 0.22));
+        }
+
+        .hero-subtitle {
+            max-width: 720px;
+            margin: 0 auto;
+            color: var(--muted);
+            font-size: clamp(1.05rem, 2vw, 1.3rem);
+            line-height: 1.8;
+        }
+
+        .hero-actions {
+            margin-top: 2.3rem;
+            display: flex;
+            justify-content: center;
+            gap: 1rem;
+            flex-wrap: wrap;
+        }
+
+        .btn-primary-glow {
+            border: none;
+            color: white;
+            padding: 0.9rem 2rem;
+            border-radius: 50px;
+            font-family: 'Orbitron', sans-serif;
+            letter-spacing: 0.04em;
+            background: linear-gradient(135deg, #6366f1, #a855f7);
+            box-shadow: 0 12px 30px rgba(124, 58, 237, 0.28);
+            transition: transform 0.25s ease, box-shadow 0.25s ease;
+        }
+
+        .btn-primary-glow:hover {
+            color: white;
+            transform: translateY(-3px);
+            box-shadow: 0 18px 38px rgba(168, 85, 247, 0.38);
+        }
+
+        .btn-secondary-glow {
+            color: #cbd5e1;
+            padding: 0.9rem 2rem;
+            border-radius: 50px;
+            border: 1px solid rgba(148, 163, 184, 0.25);
+            background: rgba(15, 23, 42, 0.45);
+            transition: all 0.25s ease;
+        }
+
+        .btn-secondary-glow:hover {
+            color: white;
+            border-color: rgba(192, 132, 252, 0.55);
+            background: rgba(129, 140, 248, 0.08);
+        }
+
+        /* Sections */
+
+        .section {
+            padding: 5rem 0;
+        }
+
+        .section-heading {
+            text-align: center;
+            margin-bottom: 3rem;
+        }
+
+        .section-heading h2 {
+            font-family: 'Orbitron', sans-serif;
+            font-size: clamp(1.7rem, 4vw, 2.5rem);
+            margin-bottom: 0.8rem;
+            color: #f8fafc;
+        }
+
+        .section-heading p {
+            max-width: 650px;
+            margin: auto;
+            color: var(--muted);
+            line-height: 1.7;
+        }
+
+        .glass-card {
+            height: 100%;
+            padding: 2rem;
+            border-radius: 22px;
+            background: var(--panel);
+            border: 1px solid var(--border);
+            backdrop-filter: blur(14px);
+            box-shadow: 0 24px 60px rgba(0, 0, 0, 0.2);
+            transition: transform 0.3s ease, border-color 0.3s ease;
+        }
+
+        .glass-card:hover {
+            transform: translateY(-6px);
+            border-color: rgba(129, 140, 248, 0.32);
+        }
+
+        .feature-icon {
+            width: 52px;
+            height: 52px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border-radius: 15px;
+            margin-bottom: 1.3rem;
+            background: linear-gradient(135deg, rgba(99, 102, 241, 0.18), rgba(192, 132, 252, 0.18));
+            border: 1px solid rgba(192, 132, 252, 0.2);
+            color: #c4b5fd;
+            font-size: 1.25rem;
+        }
+
+        .glass-card h3 {
+            font-family: 'Orbitron', sans-serif;
+            font-size: 1.05rem;
+            margin-bottom: 0.8rem;
+            color: #f8fafc;
+        }
+
+        .glass-card p {
+            color: var(--muted);
+            line-height: 1.7;
+            margin-bottom: 0;
+        }
+
+        /* Examples */
+
+        .examples-section .example-flow {
+            display: flex;
+            align-items: center;
+            gap: 1.4rem;
+            padding: 1.2rem;
+            border-radius: 20px;
+            background: rgba(8, 13, 32, 0.5);
+            border: 1px solid rgba(255, 255, 255, 0.08);
+        }
+
+        .example-inputs {
+            flex: 1;
+            display: grid;
+            gap: 1rem;
+        }
+
+        .example-output {
+            flex: 1;
+        }
+
+        .example-role {
+            font-size: 0.78rem;
+            font-weight: 700;
+            letter-spacing: 0.08em;
+            color: #cbd5e1;
+            margin-bottom: 0.45rem;
+            text-transform: uppercase;
+            text-align: center;
+        }
+
+        .example-image {
+            width: 100%;
+            height: 210px;
+            object-fit: contain;
+            border-radius: 12px;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            background: rgba(15, 23, 42, 0.75);
+        }
+
+        .example-arrow {
+            color: #a5b4fc;
+            font-size: 1.8rem;
+            font-weight: 700;
+        }
+
+        /* FAQ */
+
+        .faq-section .accordion-item {
+            background: rgba(15, 23, 42, 0.55);
+            border: 1px solid rgba(255, 255, 255, 0.09);
+            margin-bottom: 0.8rem;
+            border-radius: 14px;
+            overflow: hidden;
+        }
+
+        .faq-section .accordion-button {
+            background: transparent;
+            color: #e2e8f0;
+            font-weight: 600;
+            padding: 1.15rem 1.25rem;
+            box-shadow: none;
+        }
+
+        .faq-section .accordion-button:not(.collapsed) {
+            color: #f8fafc;
+            background: rgba(129, 140, 248, 0.1);
+        }
+
+        .faq-section .accordion-button::after {
+            filter: invert(1);
+            opacity: 0.6;
+        }
+
+        .faq-section .accordion-body {
+            color: var(--muted);
+            line-height: 1.7;
+            background: rgba(8, 13, 32, 0.3);
+        }
+
+        /* Final CTA */
+
+        .cta-card {
+            text-align: center;
+            padding: 4rem 2rem;
+            border-radius: 28px;
+            background:
+                radial-gradient(circle at 50% 0%, rgba(168, 85, 247, 0.16), transparent 55%),
+                rgba(17, 25, 52, 0.72);
+            border: 1px solid rgba(192, 132, 252, 0.18);
+        }
+
+        .cta-card h2 {
+            font-family: 'Orbitron', sans-serif;
+            margin-bottom: 1rem;
+        }
+
+        .cta-card p {
+            color: var(--muted);
+            max-width: 600px;
+            margin: 0 auto 1.8rem;
+            line-height: 1.7;
+        }
+
+        /* Footer */
+
+        .footer-section {
+            margin-top: 4rem;
+            padding: 2rem 0;
+            border-top: 1px solid rgba(255, 255, 255, 0.07);
+            background: rgba(5, 9, 23, 0.7);
+        }
+
+        .footer-brand {
+            font-family: 'Orbitron', sans-serif;
+            color: #c4b5fd;
+            font-weight: 600;
+            letter-spacing: 0.05em;
+        }
+
+        .footer-section p {
+            color: #64748b;
+            margin: 0;
+        }
+
+        /* Responsive */
+
+        @media (max-width: 991.98px) {
+            .navbar-nav {
+                padding-top: 1rem;
+            }
+
+            .nav-link {
+                margin-left: 0;
+                margin-bottom: 0.35rem;
+            }
+
+            .btn-signin {
+                display: inline-block;
+                margin: 0.5rem 0 0;
+            }
+        }
+
+        @media (max-width: 767.98px) {
+            .hero-section {
+                min-height: 76vh;
+                padding-top: 7rem;
+            }
+
+            .examples-section .example-flow {
+                flex-direction: column;
+            }
+
+            .example-arrow {
+                transform: rotate(90deg);
+            }
+
+            .example-inputs,
+            .example-output {
+                width: 100%;
+            }
+
+            .example-image {
+                height: 220px;
+            }
+
+            .section {
+                padding: 4rem 0;
+            }
+        }
+    </style>
+</head>
+
+<body>
+
+    <canvas id="neuralCanvas"></canvas>
+
+    <div class="background-glow glow-one"></div>
+    <div class="background-glow glow-two"></div>
+
+    <div class="page-content">
+
+        <!-- Navbar -->
+        <nav class="navbar navbar-expand-lg fixed-top">
+            <div class="container">
+
+                <a class="navbar-brand" href="{{ url_for('index') }}">
+                    <i class="fas fa-brain me-2"></i>
+                    <span>STYLOMERA</span>
+                </a>
+
+                <button
+                    class="navbar-toggler navbar-dark"
+                    type="button"
+                    data-bs-toggle="collapse"
+                    data-bs-target="#navbarNav"
+                    aria-controls="navbarNav"
+                    aria-expanded="false"
+                    aria-label="Toggle navigation"
+                >
+                    <span class="navbar-toggler-icon"></span>
+                </button>
+
+                <div class="collapse navbar-collapse" id="navbarNav">
+
+                    <ul class="navbar-nav ms-auto">
+                        <li class="nav-item">
+                            <a class="nav-link" href="#home">Home</a>
+                        </li>
+
+                        <li class="nav-item">
+                            <a class="nav-link" href="#examples">Examples</a>
+                        </li>
+
+                        <li class="nav-item">
+                            <a class="nav-link" href="#features">Features</a>
+                        </li>
+
+                        <li class="nav-item">
+                            <a class="nav-link" href="#faq">FAQ</a>
+                        </li>
+                    </ul>
+
+                    <a
+                        href="{{ url_for('login') }}"
+                        class="btn btn-signin"
+                    >
+                        Sign In
+                    </a>
+
+                </div>
+            </div>
+        </nav>
+
+        <!-- Hero -->
+        <section class="hero-section" id="home">
+            <div class="container">
+
+                <div class="hero-badge">
+                    <i class="fas fa-wand-magic-sparkles"></i>
+                    AI-Powered Neural Art
+                </div>
+
+                <h1 class="hero-title">STYLOMERA</h1>
+
+                <p class="hero-subtitle">
+                    Transform ordinary images into artistic creations using
+                    neural style transfer powered by deep learning.
+                </p>
+
+                <div class="hero-actions">
+
+                    <a
+                        href="{{ url_for('login') }}"
+                        class="btn btn-primary-glow"
+                    >
+                        <i class="fas fa-palette me-2"></i>
+                        Create Your Artwork
+                    </a>
+
+                    <a
+                        href="#examples"
+                        class="btn btn-secondary-glow"
+                    >
+                        Explore Examples
+                    </a>
+
+                </div>
+
+            </div>
+        </section>
+
+        <!-- Features -->
+        <section class="section" id="features">
+            <div class="container">
+
+                <div class="section-heading">
+                    <h2>Built for AI-Powered Creativity</h2>
+                    <p>
+                        Stylomera combines deep learning and artistic style
+                        transfer to turn your images into unique visual creations.
+                    </p>
+                </div>
+
+                <div class="row g-4">
+
+                    <div class="col-md-4">
+                        <div class="glass-card">
+                            <div class="feature-icon">
+                                <i class="fas fa-brain"></i>
+                            </div>
+
+                            <h3>Neural Style Transfer</h3>
+
+                            <p>
+                                Use a content image and a style reference to
+                                create a new image while preserving the important
+                                visual structure of the original.
+                            </p>
+                        </div>
+                    </div>
+
+                    <div class="col-md-4">
+                        <div class="glass-card">
+                            <div class="feature-icon">
+                                <i class="fas fa-sliders"></i>
+                            </div>
+
+                            <h3>Style Control</h3>
+
+                            <p>
+                                Adjust the strength of the artistic transformation
+                                and decide how strongly the selected style appears
+                                in your final creation.
+                            </p>
+                        </div>
+                    </div>
+
+                    <div class="col-md-4">
+                        <div class="glass-card">
+                            <div class="feature-icon">
+                                <i class="fas fa-images"></i>
+                            </div>
+
+                            <h3>Your Creations</h3>
+
+                            <p>
+                                Sign in to access the protected creation workspace
+                                and keep track of the artwork you generate with
+                                Stylomera.
+                            </p>
+                        </div>
+                    </div>
+
+                </div>
+            </div>
+        </section>
+
+        <!-- Examples -->
+        <section class="section examples-section" id="examples">
+            <div class="container">
+
+                <div class="section-heading">
+                    <h2>See Stylomera in Action</h2>
+                    <p>
+                        Explore examples of how different artistic references
+                        transform the same content image.
+                    </p>
+                </div>
+
+                <div class="row g-4">
+
+                    <div class="col-12">
+                        <div class="example-flow">
+
+                            <div class="example-inputs">
+
+                                <div>
+                                    <div class="example-role">Content Image</div>
+
+                                    <img
+                                        src="{{ url_for('send_example', filename='brad_pitt.jpg') }}"
+                                        alt="Content image"
+                                        class="example-image"
+                                    >
+                                </div>
+
+                                <div>
+                                    <div class="example-role">Style Image</div>
+
+                                    <img
+                                        src="{{ url_for('send_example', filename='sketch.png') }}"
+                                        alt="Sketch style reference"
+                                        class="example-image"
+                                    >
+                                </div>
+
+                            </div>
+
+                            <div class="example-arrow">
+                                →
+                            </div>
+
+                            <div class="example-output">
+
+                                <div class="example-role">Stylomera Output</div>
+
+                                <img
+                                    src="{{ url_for('send_example', filename='stylized_brad_pitt.jpg') }}"
+                                    alt="Stylized output"
+                                    class="example-image"
+                                >
+
+                            </div>
+
+                        </div>
+                    </div>
+
+                    <div class="col-12">
+                        <div class="example-flow">
+
+                            <div class="example-inputs">
+
+                                <div>
+                                    <div class="example-role">Content Image</div>
+
+                                    <img
+                                        src="{{ url_for('send_example', filename='brad_pitt.jpg') }}"
+                                        alt="Content image"
+                                        class="example-image"
+                                    >
+                                </div>
+
+                                <div>
+                                    <div class="example-role">Style Image</div>
+
+                                    <img
+                                        src="{{ url_for('send_example', filename='picasso_seated_nude_hr.jpg') }}"
+                                        alt="Painting style reference"
+                                        class="example-image"
+                                    >
+                                </div>
+
+                            </div>
+
+                            <div class="example-arrow">
+                                →
+                            </div>
+
+                            <div class="example-output">
+
+                                <div class="example-role">Stylomera Output</div>
+
+                                <img
+                                    src="{{ url_for('send_example', filename='stylized_brad_pitt (1).jpg') }}"
+                                    alt="Stylized output"
+                                    class="example-image"
+                                >
+
+                            </div>
+
+                        </div>
+                    </div>
+
+                </div>
+            </div>
+        </section>
+
+        <!-- How It Works -->
+        <section class="section" id="how-it-works">
+            <div class="container">
+
+                <div class="section-heading">
+                    <h2>How Stylomera Works</h2>
+                    <p>
+                        A simple workflow powered by a deep-learning style transfer model.
+                    </p>
+                </div>
+
+                <div class="row g-4">
+
+                    <div class="col-md-4">
+                        <div class="glass-card text-center">
+                            <div class="feature-icon mx-auto">
+                                <i class="fas fa-image"></i>
+                            </div>
+
+                            <h3>01. Choose Your Content</h3>
+
+                            <p>
+                                Select the image whose structure and subject
+                                you want to preserve.
+                            </p>
+                        </div>
+                    </div>
+
+                    <div class="col-md-4">
+                        <div class="glass-card text-center">
+                            <div class="feature-icon mx-auto">
+                                <i class="fas fa-brush"></i>
+                            </div>
+
+                            <h3>02. Choose a Style</h3>
+
+                            <p>
+                                Provide an artistic reference such as a painting,
+                                sketch, abstract artwork, or another visual style.
+                            </p>
+                        </div>
+                    </div>
+
+                    <div class="col-md-4">
+                        <div class="glass-card text-center">
+                            <div class="feature-icon mx-auto">
+                                <i class="fas fa-sparkles"></i>
+                            </div>
+
+                            <h3>03. Generate</h3>
+
+                            <p>
+                                Stylomera applies the selected visual style to
+                                your content and produces the final artwork.
+                            </p>
+                        </div>
+                    </div>
+
+                </div>
+            </div>
+        </section>
+
+        <!-- FAQ -->
+        <section class="section faq-section" id="faq">
+            <div class="container">
+
+                <div class="section-heading">
+                    <h2>Frequently Asked Questions</h2>
+                    <p>
+                        A few things to know about the technology behind Stylomera.
+                    </p>
+                </div>
+
+                <div class="accordion" id="faqAccordion">
+
+                    <div class="accordion-item">
+                        <h2 class="accordion-header" id="faqHeadingOne">
+                            <button
+                                class="accordion-button collapsed"
+                                type="button"
+                                data-bs-toggle="collapse"
+                                data-bs-target="#faqOne"
+                                aria-expanded="false"
+                                aria-controls="faqOne"
+                            >
+                                Is Stylomera based on a pretrained model?
+                            </button>
+                        </h2>
+
+                        <div
+                            id="faqOne"
+                            class="accordion-collapse collapse"
+                            aria-labelledby="faqHeadingOne"
+                            data-bs-parent="#faqAccordion"
+                        >
+                            <div class="accordion-body">
+                                Stylomera uses a learned decoder trained for
+                                neural style transfer together with a VGG-based
+                                encoder and Adaptive Instance Normalization.
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="accordion-item">
+                        <h2 class="accordion-header" id="faqHeadingTwo">
+                            <button
+                                class="accordion-button collapsed"
+                                type="button"
+                                data-bs-toggle="collapse"
+                                data-bs-target="#faqTwo"
+                                aria-expanded="false"
+                                aria-controls="faqTwo"
+                            >
+                                What types of styles can I use?
+                            </button>
+                        </h2>
+
+                        <div
+                            id="faqTwo"
+                            class="accordion-collapse collapse"
+                            aria-labelledby="faqHeadingTwo"
+                            data-bs-parent="#faqAccordion"
+                        >
+                            <div class="accordion-body">
+                                You can use many different artistic references,
+                                including sketches, paintings, abstract artwork,
+                                watercolor-like styles, cubist artwork, and more.
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="accordion-item">
+                        <h2 class="accordion-header" id="faqHeadingThree">
+                            <button
+                                class="accordion-button collapsed"
+                                type="button"
+                                data-bs-toggle="collapse"
+                                data-bs-target="#faqThree"
+                                aria-expanded="false"
+                                aria-controls="faqThree"
+                            >
+                                What technology is used?
+                            </button>
+                        </h2>
+
+                        <div
+                            id="faqThree"
+                            class="accordion-collapse collapse"
+                            aria-labelledby="faqHeadingThree"
+                            data-bs-parent="#faqAccordion"
+                        >
+                            <div class="accordion-body">
+                                Stylomera is built with Python, PyTorch and Flask,
+                                with Adaptive Instance Normalization used for the
+                                neural style transfer process.
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="accordion-item">
+                        <h2 class="accordion-header" id="faqHeadingFour">
+                            <button
+                                class="accordion-button collapsed"
+                                type="button"
+                                data-bs-toggle="collapse"
+                                data-bs-target="#faqFour"
+                                aria-expanded="false"
+                                aria-controls="faqFour"
+                            >
+                                Do I need an account to create artwork?
+                            </button>
+                        </h2>
+
+                        <div
+                            id="faqFour"
+                            class="accordion-collapse collapse"
+                            aria-labelledby="faqHeadingFour"
+                            data-bs-parent="#faqAccordion"
+                        >
+                            <div class="accordion-body">
+                                Yes. The creation workspace is protected and
+                                requires you to sign in before using the
+                                style-transfer feature.
+                            </div>
+                        </div>
+                    </div>
+
+                </div>
+            </div>
+        </section>
+
+        <!-- CTA -->
+        <section class="section">
+            <div class="container">
+
+                <div class="cta-card">
+
+                    <h2>Ready to Create?</h2>
+
+                    <p>
+                        Step into the Stylomera workspace and transform your
+                        images with AI-powered neural style transfer.
+                    </p>
+
+                    <a
+                        href="{{ url_for('login') }}"
+                        class="btn btn-primary-glow"
+                    >
+                        Start Creating
+                        <i class="fas fa-arrow-right ms-2"></i>
+                    </a>
+
+                </div>
+
+            </div>
+        </section>
+
+        <!-- Footer -->
+        <footer class="footer-section">
+            <div class="container">
+
+                <div class="d-flex flex-column flex-md-row justify-content-between align-items-center gap-3">
+
+                    <div class="footer-brand">
+                        <i class="fas fa-brain me-2"></i>
+                        STYLOMERA
+                    </div>
+
+                    <p>
+                        AI-powered neural style transfer.
+                    </p>
+
+                    <p>
+                        © 2026 Stylomera. All rights reserved.
+                    </p>
+
+                </div>
+
+            </div>
+        </footer>
+
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+
+    <script>
+        /* --------------------------------
+           Neural Background
+        -------------------------------- */
+
+        const canvas = document.getElementById("neuralCanvas");
+        const ctx = canvas.getContext("2d");
+
+        let width;
+        let height;
+        let particles = [];
+
+        function resizeCanvas() {
+            width = canvas.width = window.innerWidth;
+            height = canvas.height = window.innerHeight;
+        }
+
+        class Particle {
+            constructor() {
+                this.x = Math.random() * width;
+                this.y = Math.random() * height;
+                this.vx = (Math.random() - 0.5) * 0.35;
+                this.vy = (Math.random() - 0.5) * 0.35;
+                this.size = Math.random() * 2 + 0.7;
+            }
+
+            update() {
+                this.x += this.vx;
+                this.y += this.vy;
+
+                if (this.x < 0 || this.x > width) {
+                    this.vx *= -1;
+                }
+
+                if (this.y < 0 || this.y > height) {
+                    this.vy *= -1;
+                }
+            }
+
+            draw() {
+                ctx.fillStyle = "rgba(167, 139, 250, 0.5)";
+                ctx.beginPath();
+                ctx.arc(this.x, this.y, this.size, 0, Math.PI * 2);
+                ctx.fill();
+            }
+        }
+
+        function initParticles() {
+            particles = [];
+
+            const particleCount = Math.min(
+                90,
+                Math.floor(window.innerWidth / 18)
+            );
+
+            for (let i = 0; i < particleCount; i++) {
+                particles.push(new Particle());
+            }
+        }
+
+        function animateBackground() {
+            ctx.clearRect(0, 0, width, height);
+
+            particles.forEach((particle, index) => {
+
+                particle.update();
+                particle.draw();
+
+                for (let j = index + 1; j < particles.length; j++) {
+
+                    const other = particles[j];
+
+                    const distance = Math.hypot(
+                        particle.x - other.x,
+                        particle.y - other.y
+                    );
+
+                    if (distance < 110) {
+
+                        const opacity = 0.12 * (1 - distance / 110);
+
+                        ctx.strokeStyle =
+                            `rgba(129, 140, 248, ${opacity})`;
+
+                        ctx.lineWidth = 1;
+
+                        ctx.beginPath();
+                        ctx.moveTo(particle.x, particle.y);
+                        ctx.lineTo(other.x, other.y);
+                        ctx.stroke();
+                    }
+                }
+            });
+
+            requestAnimationFrame(animateBackground);
+        }
+
+        resizeCanvas();
+        initParticles();
+        animateBackground();
+
+        window.addEventListener("resize", function () {
+            resizeCanvas();
+            initParticles();
+        });
+    </script>
+
+</body>
+</html>

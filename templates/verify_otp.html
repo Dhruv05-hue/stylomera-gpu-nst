@@ -1,0 +1,195 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <title>Verify Email | Stylomera</title>
+
+    <link
+        href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Orbitron:wght@500;600;700&display=swap"
+        rel="stylesheet"
+    >
+
+    <style>
+        * {
+            box-sizing: border-box;
+        }
+
+        body {
+            margin: 0;
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background:
+                radial-gradient(circle at 20% 20%, rgba(100, 80, 255, .18), transparent 35%),
+                radial-gradient(circle at 80% 80%, rgba(190, 70, 255, .12), transparent 35%),
+                #080d24;
+            color: #fff;
+            font-family: 'Inter', sans-serif;
+        }
+
+        .card {
+            width: min(440px, 92%);
+            padding: 42px 36px;
+            border: 1px solid rgba(150, 140, 255, .22);
+            border-radius: 24px;
+            background: rgba(20, 28, 58, .78);
+            backdrop-filter: blur(18px);
+            box-shadow: 0 25px 70px rgba(0, 0, 0, .35);
+            text-align: center;
+        }
+
+        .logo {
+            font-family: 'Orbitron', sans-serif;
+            font-size: 22px;
+            font-weight: 700;
+            color: #9a8cff;
+            margin-bottom: 30px;
+        }
+
+        h1 {
+            font-family: 'Orbitron', sans-serif;
+            font-size: 25px;
+            margin: 0 0 12px;
+        }
+
+        p {
+            color: #9ba6c4;
+            line-height: 1.6;
+            font-size: 14px;
+        }
+
+        .email {
+            color: #c4b5fd;
+            font-weight: 600;
+            word-break: break-word;
+        }
+
+        .error,
+        .success {
+            padding: 12px 14px;
+            border-radius: 10px;
+            margin: 20px 0;
+            font-size: 13px;
+        }
+
+        .error {
+            background: rgba(190, 55, 70, .16);
+            border: 1px solid rgba(230, 80, 100, .4);
+            color: #ffc5ce;
+        }
+
+        .success {
+            background: rgba(80, 180, 130, .12);
+            border: 1px solid rgba(80, 200, 140, .35);
+            color: #b9f5d5;
+        }
+
+        input {
+            width: 100%;
+            margin-top: 20px;
+            padding: 16px;
+            border-radius: 12px;
+            border: 1px solid rgba(150, 160, 200, .2);
+            background: rgba(5, 10, 30, .75);
+            color: #fff;
+            text-align: center;
+            font-size: 24px;
+            letter-spacing: 8px;
+            outline: none;
+        }
+
+        input:focus {
+            border-color: #9a72ff;
+            box-shadow: 0 0 0 3px rgba(140, 100, 255, .12);
+        }
+
+        button {
+            width: 100%;
+            margin-top: 18px;
+            padding: 15px;
+            border: 0;
+            border-radius: 30px;
+            background: linear-gradient(90deg, #655cf5, #b04cf5);
+            color: #fff;
+            font-family: 'Orbitron', sans-serif;
+            font-size: 13px;
+            cursor: pointer;
+        }
+
+        .links {
+            margin-top: 24px;
+            display: flex;
+            justify-content: center;
+            gap: 18px;
+            font-size: 13px;
+        }
+
+        a {
+            color: #aaa2ff;
+            text-decoration: none;
+        }
+
+        a:hover {
+            color: #d2cfff;
+        }
+    </style>
+</head>
+
+<body>
+
+<div class="card">
+
+    <div class="logo">STYLOMERA</div>
+
+    <h1>VERIFY YOUR EMAIL</h1>
+
+    <p>
+        We've sent a 6-digit verification code to
+        <br>
+        <span class="email">{{ email }}</span>
+    </p>
+
+    {% if error %}
+        <div class="error">
+            {{ error }}
+        </div>
+    {% endif %}
+
+    {% with messages = get_flashed_messages(with_categories=true) %}
+        {% for category, message in messages %}
+            <div class="{{ 'success' if category == 'success' else 'error' }}">
+                {{ message }}
+            </div>
+        {% endfor %}
+    {% endwith %}
+
+    <form method="POST">
+        <input
+            type="text"
+            name="otp"
+            maxlength="6"
+            minlength="6"
+            pattern="[0-9]{6}"
+            inputmode="numeric"
+            autocomplete="one-time-code"
+            placeholder="000000"
+            required
+        >
+
+        <button type="submit">
+            VERIFY EMAIL →
+        </button>
+    </form>
+
+    <div class="links">
+        <a href="{{ url_for('resend_otp') }}">Resend Code</a>
+        <a href="{{ url_for('signup') }}">Back to Sign Up</a>
+    </div>
+
+</div>
+
+</body>
+</html>

@@ -1,0 +1,11 @@
+Flask
+Flask-WTF
+Flask-Bootstrap
+Werkzeug
+WTForms
+Pillow
+torch
+torchvision
+supabase
+httpx
+python-dotenv
