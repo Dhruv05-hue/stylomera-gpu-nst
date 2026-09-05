@@ -5,11 +5,11 @@ Werkzeug
 WTForms
 Pillow
 numpy
---extra-index-url https://download.pytorch.org/whl/cpu
-torch==2.14.0+cpu
-torchvision==0.29.0+cpu
+torch==2.2.2
+torchvision==0.17.2
 tqdm
 supabase
 httpx
 python-dotenv
+gradio_client
 gunicorn
