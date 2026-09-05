@@ -176,13 +176,13 @@ def style_transfer(
 ):
 
     content_transform = transforms.Compose([
-        transforms.Resize(256),
+        transforms.Resize(512),
         transforms.ToTensor()
     ])
 
 
     style_transform = transforms.Compose([
-        transforms.Resize(256),
+        transforms.Resize(512),
         transforms.ToTensor()
     ])
 
