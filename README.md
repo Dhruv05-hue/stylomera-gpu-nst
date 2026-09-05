@@ -1,466 +1,653 @@
 <div align="center">
 
-🎨 STYLOMERA
+# 🎨 STYLOMERA
 
-✨ Transform Images. Create Art. Powered by AI. ✨
+### ✨ Transform Images. Create Art. Powered by AI. ✨
 
-An AI-powered Neural Style Transfer web application built with PyTorch, AdaIN, Flask & Supabase.
+An AI-powered **Neural Style Transfer** web application built with **PyTorch, AdaIN, Flask, Hugging Face ZeroGPU & Supabase**.
 
 <p>
   <img src="https://img.shields.io/badge/Python-3.x-3776AB?style=for-the-badge&logo=python&logoColor=white" alt="Python">
   <img src="https://img.shields.io/badge/PyTorch-Deep%20Learning-EE4C2C?style=for-the-badge&logo=pytorch&logoColor=white" alt="PyTorch">
   <img src="https://img.shields.io/badge/Flask-Backend-000000?style=for-the-badge&logo=flask&logoColor=white" alt="Flask">
+  <img src="https://img.shields.io/badge/Hugging%20Face-ZeroGPU-FFD21E?style=for-the-badge&logo=huggingface&logoColor=black" alt="Hugging Face">
   <img src="https://img.shields.io/badge/Supabase-Database%20%26%20Auth-3ECF8E?style=for-the-badge&logo=supabase&logoColor=white" alt="Supabase">
 </p>
 
 <p>
-  <b>Computer Vision</b> • <b>Neural Style Transfer</b> • <b>Adaptive Instance Normalization</b> • <b>Deep Learning</b>
+  <b>Computer Vision</b> • <b>Neural Style Transfer</b> • <b>Adaptive Instance Normalization</b> • <b>Deep Learning</b> • <b>GPU Inference</b>
 </p>
 
 </div>
 
-🌌 What is Stylomera?
+---
 
-Stylomera is a web-based Neural Style Transfer application that uses deep learning to transform the visual appearance of a content image using the artistic characteristics of a style image.
+## 🌌 What is Stylomera?
+
+Stylomera is a web-based **Neural Style Transfer** application that uses deep learning to transform the visual appearance of a content image using the artistic characteristics of a style image.
 
 Simply choose:
 
-🖼️ Content Image + 🎨 Style Image
-             ↓
-        🧠 AI Processing
-             ↓
-      ✨ Stylized Artwork
+- 🖼️ **Content Image** — The image whose structure you want to preserve
+- 🎨 **Style Image** — The artwork whose visual style you want to apply
 
-Behind the scenes, Stylomera uses VGG-19 feature extraction, Adaptive Instance Normalization (AdaIN), and a trained decoder network to generate the final artwork.
+The application then performs Neural Style Transfer and generates a stylized artwork.
 
-✨ Features
+    🖼️ Content Image + 🎨 Style Image
+                    ↓
+               🧠 AI Processing
+                    ↓
+            ✨ Stylized Artwork
 
-Feature
+Behind the scenes, Stylomera uses:
 
-Description
+- 🧠 VGG-19 feature extraction
+- 🔄 Adaptive Instance Normalization (AdaIN)
+- 🧠 A trained decoder network
+- 🔥 PyTorch-based deep learning inference
+- ⚡ Hugging Face ZeroGPU for GPU-assisted inference
 
-🖼️ Content Image
+---
 
-Upload the image whose structure you want to preserve
+## ✨ Features
 
-🎨 Style Image
+- 🖼️ **Content Image Upload**
+  - Upload the image whose structure you want to preserve.
 
-Upload the artwork whose visual style you want to apply
+- 🎨 **Style Image Upload**
+  - Upload the artwork whose visual style you want to apply.
 
-🧠 AI Style Transfer
+- 🧠 **AI Neural Style Transfer**
+  - Generate stylized images using the AdaIN approach.
 
-Generate stylized images using AdaIN
+- 🎚️ **Adjustable Style Strength**
+  - Control how strongly the artistic style is applied.
 
-🎚️ Style Strength
+- ⚡ **GPU-Assisted Inference**
+  - Perform computationally intensive NST inference using Hugging Face ZeroGPU.
 
-Control how strongly the style is applied
+- 🔐 **User Authentication**
+  - Secure user authentication using Supabase.
 
-⚡ PyTorch Inference
+- ✉️ **Email OTP Verification**
+  - Verify user accounts using email-based OTP verification.
 
-Fast neural-network based image generation
+- ☁️ **Cloud Storage**
+  - Store generated images using Supabase Storage.
 
-🔐 Authentication
+- 🗂️ **My Creations**
+  - View previously generated artworks associated with the user's account.
 
-Secure user authentication with Supabase
+- 📥 **Download Generated Artwork**
+  - Download generated images locally.
 
-✉️ Email OTP
+- 📱 **Responsive UI**
+  - Designed for desktop and mobile screens.
 
-Email verification through OTP
+---
 
-☁️ Cloud Storage
+## 🧠 How Stylomera Works
 
-Store generated images using Supabase Storage
+Stylomera follows the **AdaIN Neural Style Transfer pipeline**.
 
-🗂️ My Creations
+    ┌──────────────────────┐
+    │    Content Image     │
+    └──────────┬───────────┘
+               │
+               ▼
+        ┌───────────────┐
+        │    VGG-19     │
+        │    Encoder    │
+        └───────┬───────┘
+                │
+                │ Content Features
+                ▼
+           ┌───────────┐
+           │   AdaIN   │◄────────── Style Features
+           └─────┬─────┘
+                 ▲
+                 │
+         ┌───────┴───────┐
+         │    VGG-19     │
+         │    Encoder    │
+         └───────┬───────┘
+                 ▲
+                 │
+        ┌────────┴─────────┐
+        │    Style Image   │
+        └──────────────────┘
 
-View previously generated artworks
+                 │
+                 ▼
+        ┌─────────────────┐
+        │ Trained Decoder │
+        └────────┬────────┘
+                 │
+                 ▼
+        ✨ Stylized Artwork ✨
 
-📥 Download
+### 🔹 1. VGG-19 Encoder
 
-Save generated artwork locally
+The VGG-19 network extracts meaningful visual features from both the content and style images.
 
-📱 Responsive UI
+- Content features represent the structure of the content image.
+- Style features represent the visual characteristics of the style image.
 
-Designed for desktop and mobile screens
-
-🧠 How Stylomera Works
-
-Stylomera follows the AdaIN Neural Style Transfer pipeline.
-
-                         ┌──────────────────────┐
-                         │     Content Image    │
-                         └──────────┬───────────┘
-                                    │
-                                    ▼
-                            ┌───────────────┐
-                            │    VGG-19     │
-                            │    Encoder    │
-                            └───────┬───────┘
-                                    │
-                                    │ Content Features
-                                    ▼
-                              ┌───────────┐
-                              │   AdaIN   │◄────────── Style Features
-                              └─────┬─────┘
-                                    ▲
-                                    │
-                            ┌───────┴───────┐
-                            │    VGG-19     │
-                            │    Encoder    │
-                            └───────┬───────┘
-                                    ▲
-                                    │
-                         ┌──────────┴──────────┐
-                         │     Style Image    │
-                         └─────────────────────┘
-
-                                    │
-                                    ▼
-                           ┌────────────────┐
-                           │ Trained Decoder │
-                           └───────┬────────┘
-                                   │
-                                   ▼
-                          ✨ Stylized Artwork ✨
-
-🔹 1. VGG-19 Encoder
-
-The VGG-19 network extracts meaningful visual features from both images.
-
-🔹 2. Adaptive Instance Normalization
+### 🔹 2. Adaptive Instance Normalization
 
 AdaIN aligns the statistical properties of the content features with the style features.
 
 In simple terms:
 
-The content provides the structure, while the style provides the appearance.
+> **The content provides the structure, while the style provides the appearance.**
 
-🔹 3. Trained Decoder
+### 🔹 3. Trained Decoder
 
 The transformed feature representation is passed through the trained decoder to reconstruct the final RGB image.
 
-🔹 4. Alpha Blending
+### 🔹 4. Alpha Blending
 
 The style strength can be controlled using the alpha parameter.
 
-α = 0     → Original content
-α = 1     → Full stylization
-0 < α < 1 → Partial stylization
+    α = 0       → Original content
+    α = 1       → Full stylization
+    0 < α < 1   → Partial stylization
 
-🛠️ Technology Stack
+---
 
-🤖 Artificial Intelligence
+## 🏗️ Deployment Architecture
 
-PyTorch
+Stylomera has two deployment approaches.
 
-Torchvision
+### V1 — CPU-Based Inference
 
-VGG-19
+The original implementation performs Neural Style Transfer directly inside the Flask application.
 
-Adaptive Instance Normalization (AdaIN)
+    User
+     ↓
+    Flask / Render
+     ↓
+    PyTorch CPU Inference
+     ↓
+    VGG-19 + AdaIN + Decoder
+     ↓
+    Generated Image
 
-Convolutional Neural Networks
+Although this approach works, Neural Style Transfer is computationally expensive for a small CPU-based web-service instance.
 
-⚙️ Backend
+### V2 — GPU-Assisted Inference
 
-Python
+The optimized implementation separates the web application from the GPU-intensive inference workload.
 
-Flask
+    User Browser
+         │
+         ├──────────────► Render
+         │                │
+         │                ├── Authentication
+         │                ├── Application Logic
+         │                └── Save Generation
+         │
+         └──────────────► Hugging Face ZeroGPU
+                           │
+                           ├── VGG-19
+                           ├── AdaIN
+                           └── Decoder
+                           │
+                           ▼
+                     Generated Image
+                           │
+                           ▼
+                        Render
+                           │
+                           ▼
+                       Supabase
 
-Flask-WTF
+This architecture allows:
 
-Pillow
+- ⚡ GPU-intensive NST inference to run on Hugging Face ZeroGPU
+- 🌐 Render to handle the web application
+- 🔐 Render to handle authentication and application logic
+- ☁️ Supabase to handle database and image storage
+- 🔄 The browser to communicate directly with the Hugging Face inference Space
 
-☁️ Backend Services
+---
 
-Supabase Authentication
+## ⚡ CPU → GPU Optimization
 
-Supabase PostgreSQL
+One of the main engineering challenges in Stylomera was the computational cost of running Neural Style Transfer on CPU-based web infrastructure.
 
-Supabase Storage
+Instead of simply increasing server resources, the inference workload was separated from the web application.
 
-🎨 Frontend
+### Before — CPU-Based Architecture
 
-HTML
+    Render CPU
+       ↓
+    PyTorch
+       ↓
+    VGG-19
+       ↓
+    AdaIN
+       ↓
+    Decoder
+       ↓
+    Generated Image
 
-CSS
+### After — GPU-Assisted Architecture
 
-JavaScript
+    Render
+       ↓
+    Application + Authentication + Storage
+       │
+       └────────► Hugging Face ZeroGPU
+                        ↓
+                  GPU Inference
+                        ↓
+                  Generated Image
+                        ↓
+                      Render
+                        ↓
+                    Supabase
 
-Bootstrap
+### Why This Optimization Was Used
 
-📁 Project Architecture
+- ⚙️ CPU-based NST inference was computationally expensive.
+- 💻 Running deep learning inference on a small web-service instance was inefficient.
+- 💰 Increasing server resources would increase deployment cost.
+- 🚀 GPU inference is better suited for computationally intensive deep learning operations.
+- 🔀 Application and ML workloads were separated.
+- 🌐 Render can focus on application responsibilities.
+- ⚡ Hugging Face ZeroGPU can handle the GPU-intensive NST workload.
 
-NST_Project/
-│
-├── 📂 content_data/
-├── 📂 style_data/
-├── 📂 examples/
-│
-├── 📂 experiment/
-│   ├── exp2/
-│   ├── exp3/
-│   ├── experiment1/
-│   ├── trial/
-│   │
-│   └── 📂 trained_decoder/
-│       ├── decoder_final.pth
-│       ├── options.txt
-│       └── sample_iter_*.png
-│
-├── 📂 static/
-│   └── 📂 uploads/
-│
-├── 📂 templates/
-│   ├── creations.html
-│   ├── index.html
-│   ├── login.html
-│   ├── signup.html
-│   ├── verify_otp.html
-│   └── style_transfer.html
-│
-├── 📂 utils/
-│   ├── models.py
-│   └── utils.py
-│
-├── 🐍 app.py
-├── 🔐 supabase_client.py
-├── 🧠 train.py
-├── 🧠 vgg_normalised.pth
-├── 📦 requirements.txt
-├── 🔧 .env.example
-├── 🚫 .gitignore
-└── 📖 README.md
+This separation makes the architecture more suitable for resource-constrained web deployments.
 
-🚀 Getting Started
+---
 
-1️⃣ Clone the Repository
+## 🛠️ Technology Stack
 
-git clone https://github.com/Dhruv05-hue/stylomera-neural-style-transfer.git
-cd stylomera
+### 🤖 Artificial Intelligence
 
-2️⃣ Create a Virtual Environment
+- PyTorch
+- Torchvision
+- VGG-19
+- Adaptive Instance Normalization (AdaIN)
+- Convolutional Neural Networks
+- Trained Decoder
 
-python -m venv venv
+### ⚙️ Backend
 
-Windows
+- Python
+- Flask
+- Flask-WTF
+- Pillow
+- Gunicorn
 
-venv\Scripts\activate
+### ⚡ GPU Inference
 
-3️⃣ Install Dependencies
+- Hugging Face Spaces
+- Hugging Face ZeroGPU
+- Gradio Client
 
-pip install -r requirements.txt
+### ☁️ Backend Services
 
-4️⃣ Configure Environment Variables
+- Supabase Authentication
+- Supabase PostgreSQL
+- Supabase Storage
 
-Create a .env file in the project root.
+### 🎨 Frontend
 
-Use .env.example as your template:
+- HTML
+- CSS
+- JavaScript
+- Bootstrap
 
-SUPABASE_URL=your_supabase_project_url
-SUPABASE_KEY=your_supabase_publishable_key
-SUPABASE_SECRET_KEY=your_supabase_secret_key
+---
 
-SECRET_KEY=your_flask_secret_key
+## 📁 Project Architecture
 
-SMTP_SERVER=smtp.gmail.com
-SMTP_PORT=587
-SMTP_EMAIL=your_email@gmail.com
-SMTP_PASSWORD=your_gmail_app_password
+    NST_Project/
+    │
+    ├── 📂 content_data/
+    ├── 📂 style_data/
+    ├── 📂 examples/
+    │
+    ├── 📂 experiment/
+    │   ├── exp2/
+    │   ├── exp3/
+    │   ├── experiment1/
+    │   ├── trial/
+    │   │
+    │   └── 📂 trained_decoder/
+    │       ├── decoder_final.pth
+    │       ├── options.txt
+    │       └── sample_iter_*.png
+    │
+    ├── 📂 static/
+    │   └── 📂 uploads/
+    │
+    ├── 📂 templates/
+    │   ├── creations.html
+    │   ├── index.html
+    │   ├── login.html
+    │   ├── signup.html
+    │   ├── verify_otp.html
+    │   └── style_transfer.html
+    │
+    ├── 📂 utils/
+    │   ├── models.py
+    │   └── utils.py
+    │
+    ├── 🐍 app.py
+    ├── 🔐 supabase_client.py
+    ├── 🧠 train.py
+    ├── 🧠 vgg_normalised.pth
+    ├── 📦 requirements.txt
+    ├── 🔧 .env.example
+    ├── 🚫 .gitignore
+    └── 📖 README.md
 
-🔒 Important: Never commit your real .env file or expose your Supabase secret key, SMTP password, or other credentials.
+---
 
-▶️ Run Stylomera
+## 🚀 Getting Started
+
+### 1️⃣ Clone the Repository
+
+    git clone https://github.com/Dhruv05-hue/stylomera-gpu-nst.git
+    cd stylomera-gpu-nst
+
+### 2️⃣ Create a Virtual Environment
+
+    python -m venv venv
+
+### Windows
+
+    venv\Scripts\activate
+
+### 3️⃣ Install Dependencies
+
+    pip install -r requirements.txt
+
+### 4️⃣ Configure Environment Variables
+
+Create a `.env` file in the project root.
+
+Use `.env.example` as your template.
+
+Required configuration includes:
+
+    SUPABASE_URL=your_supabase_project_url
+    SUPABASE_KEY=your_supabase_publishable_key
+    SUPABASE_SECRET_KEY=your_supabase_secret_key
+
+    SECRET_KEY=your_flask_secret_key
+
+    SMTP_SERVER=smtp.gmail.com
+    SMTP_PORT=587
+    SMTP_EMAIL=your_email@gmail.com
+    SMTP_PASSWORD=your_gmail_app_password
+
+### 🔒 Security
+
+Never commit or expose:
+
+- `.env` files
+- Supabase secret/service-role keys
+- SMTP passwords
+- Flask secret keys
+- Other private credentials
+
+### ▶️ Run Stylomera
 
 Activate the virtual environment and run:
 
-python app.py
+    python app.py
 
 Then open:
 
-http://127.0.0.1:5000
+    http://127.0.0.1:5000
 
 🎉 Stylomera is ready!
 
-🗄️ Supabase Architecture
+---
 
-Stylomera uses Supabase for authentication, database storage, and image storage.
+## 🗄️ Supabase Architecture
 
-👤 profiles
+Stylomera uses Supabase for:
 
-Stores user profile information.
+- 🔐 User authentication
+- 🗄️ PostgreSQL database
+- ☁️ Image storage
+- 🖼️ Generated artwork persistence
 
-🎨 generations
+### 👤 `profiles`
+
+Stores user profile information, including:
+
+- User ID
+- Username
+- Email
+- Account creation timestamp
+
+### 🎨 `generations`
 
 Stores information about generated artworks:
 
-User ID
-Content Image Path
-Style Image Path
-Generated Image Path
-Alpha
-Created At
+- User ID
+- Content image path
+- Style image path
+- Generated image path
+- Alpha/style strength
+- Creation timestamp
 
-☁️ Storage
+### ☁️ Storage
 
-Images are stored in the private:
+Images are stored in the:
 
-styleforge-images
+**`styleforge-images`**
 
 bucket.
 
 The logical structure is:
 
-styleforge-images/
-│
-└── USER_ID/
-    ├── content/
-    ├── style/
-    └── generated/
+    styleforge-images/
+    │
+    └── USER_ID/
+        ├── content/
+        ├── style/
+        └── generated/
 
-🧠 Required Model Files
+This organization keeps each user's images separated by their user ID.
+
+---
+
+## 🤗 Hugging Face GPU Inference
+
+The GPU version uses a separate **Hugging Face Space** for Neural Style Transfer inference.
+
+The browser sends the following inputs to the Space:
+
+- 🖼️ Content image
+- 🎨 Style image
+- 🎚️ Alpha value
+
+The Hugging Face Space then:
+
+- Loads the VGG-19 encoder.
+- Extracts content and style features.
+- Performs Adaptive Instance Normalization.
+- Applies the selected style strength.
+- Passes the transformed features through the trained decoder.
+- Returns the generated image.
+
+The web application does not need to perform the expensive NST calculation on its Render CPU instance.
+
+The current ZeroGPU function is configured with a short maximum GPU duration because normal inference completes in approximately a few seconds.
+
+---
+
+## 🧠 Required Model Files
 
 Stylomera requires the following trained/pretrained model files:
 
-vgg_normalised.pth
-experiment/trained_decoder/decoder_final.pth
+- `vgg_normalised.pth`
+- `experiment/trained_decoder/decoder_final.pth`
 
 These files are required for Neural Style Transfer inference.
 
-🎯 User Journey
+---
 
-       👤 Create Account
-              │
-              ▼
-        ✉️ Verify OTP
-              │
-              ▼
-          🔐 Sign In
-              │
-              ▼
-      🖼️ Choose Content
-              │
-              ▼
-       🎨 Choose Style
-              │
-              ▼
-        🎚️ Set Strength
-              │
-              ▼
-        🧠 Generate Art
-              │
-              ▼
-       ✨ View Result
-              │
-              ▼
-       🗂️ My Creations
-              │
-              ▼
-          📥 Download
+## 🎯 User Journey
 
-🖼️ Examples
+    👤 Create Account
+            │
+            ▼
+      ✉️ Verify OTP
+            │
+            ▼
+        🔐 Sign In
+            │
+            ▼
+    🖼️ Choose Content
+            │
+            ▼
+     🎨 Choose Style
+            │
+            ▼
+      🎚️ Set Strength
+            │
+            ▼
+      🧠 Generate Art
+            │
+            ▼
+     ✨ View Result
+            │
+            ▼
+     🗂️ My Creations
+            │
+            ▼
+        📥 Download
 
-Place your best generated results inside the examples/ directory.
+---
+
+## 🖼️ Examples
+
+Place your best generated results inside the `examples/` directory.
 
 You can showcase:
 
-🎨 Different artistic styles
+- 🎨 Different artistic styles
+- 🏙️ Landscape transformations
+- 🧑 Portrait transformations
+- 🌌 Abstract styles
+- 🖌️ Painting-inspired results
 
-🏙️ Landscape transformations
+> 💡 **Tip:** A few high-quality examples make the GitHub repository much more attractive than uploading a large number of random outputs.
 
-🧑 Portrait transformations
+---
 
-🌌 Abstract styles
+## 📚 What This Project Demonstrates
 
-🖌️ Painting-inspired results
+Stylomera combines multiple areas of software engineering and Artificial Intelligence.
 
-💡 Tip: A few high-quality examples make the GitHub repository much more attractive than uploading a large number of random outputs.
+### 🧠 Computer Vision & Deep Learning
 
-📚 What This Project Demonstrates
+- 👁️ Computer Vision
+- 🧠 Convolutional Neural Networks
+- 🔍 VGG-19 feature extraction
+- 🎨 Neural Style Transfer
+- 🔄 Adaptive Instance Normalization
+- 📊 Feature statistics
+- 🔥 PyTorch model inference
+- 🧠 Trained neural network decoder
 
-Stylomera combines multiple areas of software engineering and AI:
+### 🌐 Web Development
 
-             Stylomera
-                 │
-       ┌─────────┼─────────┐
-       ▼         ▼         ▼
-  Computer     Deep      Web
-   Vision     Learning   Development
-       │         │         │
-       ▼         ▼         ▼
-     VGG-19    PyTorch    Flask
-       │         │         │
-       └──────┬──┴─────────┘
-              ▼
-             AdaIN
-              │
-              ▼
-       Neural Style Transfer
+- 🐍 Flask web application development
+- 🎨 HTML/CSS frontend development
+- 🌐 JavaScript client-side integration
+- 📱 Responsive UI design
+- 🔌 API integration
 
-Core concepts
+### 🔐 Authentication
 
-🧠 Convolutional Neural Networks
+- 🔐 Supabase authentication
+- ✉️ Email OTP verification
+- 👤 User sessions
+- 🗂️ User-specific data management
 
-🔍 Feature Extraction
+### ☁️ Cloud & Deployment
 
-🎨 Neural Style Transfer
+- 🤗 Hugging Face Spaces
+- ⚡ Hugging Face ZeroGPU
+- 🚀 GPU-based ML inference
+- ☁️ Render web deployment
+- 🔀 Separation of application and ML workloads
+- 📦 Cloud-based deployment architecture
 
-📊 Feature Statistics
+### 🗄️ Database & Storage
 
-🔄 Adaptive Instance Normalization
+- 🗄️ PostgreSQL
+- ☁️ Supabase Storage
+- 👤 User-specific image organization
+- 🖼️ Generation history
+- 💾 Cloud-based persistence
 
-🖥️ Deep Learning Inference
+---
 
-🌐 Flask Web Applications
+## 🔮 Future Improvements
 
-🔐 Authentication
+Some possible future enhancements include:
 
-☁️ Cloud Storage
+- 🎚️ Live style-strength preview
+- 🎨 Multiple-style blending
+- 🖼️ Batch style transfer
+- 🔍 Higher-resolution generation
+- ⚡ Faster inference
+- 🧠 Additional style-transfer models
+- 📦 Production-grade inference queueing
+- ☁️ Dedicated GPU infrastructure for larger workloads
+- 📱 Further mobile optimization
 
-🔮 Future Improvements
+---
 
-Some possible future enhancements:
-
-🎚️ Live style-strength preview
-
-🎨 Multiple-style blending
-
-🖼️ Batch style transfer
-
-🔍 Higher-resolution generation
-
-⚡ Faster inference
-
-🧠 Additional style-transfer models
-
-☁️ GPU-enabled cloud deployment
-
-📱 Further mobile optimization
-
-⭐ Why Stylomera?
+## ⭐ Why Stylomera?
 
 Stylomera is more than an image filter.
 
-It demonstrates how a deep learning model can be integrated into a complete production-style web application, combining:
+It demonstrates how a deep learning model can be integrated into a complete web application by combining:
 
-AI Model + Backend + Authentication + Database + Cloud Storage + User Interface
+- 🧠 AI Model
+- 🖥️ Backend
+- 🎨 Frontend
+- 🔐 Authentication
+- 🗄️ Database
+- ☁️ Cloud Storage
+- ⚡ GPU Inference
+- 🚀 Cloud Deployment
 
-👨‍💻 Author
+The project also demonstrates an important engineering concept:
+
+> **Identifying a computational bottleneck and redesigning the architecture instead of simply increasing infrastructure resources.**
+
+---
+
+## 👨‍💻 Author
 
 <div align="center">
 
-Dhruv Pawar
+### Dhruv Pawar
 
-AI / ML • Computer Vision • Deep Learning
+**AI / ML • Computer Vision • Deep Learning**
 
-Built with 🧠 PyTorch and ❤️ curiosity.
+Built with 🧠 **PyTorch** and ❤️ **curiosity**.
 
 </div>
 
+---
+
 <div align="center">
 
-⭐ If you like Stylomera, consider starring the repository!
+⭐ **If you like Stylomera, consider starring the repository!**
 
-Made with Python • PyTorch • Flask • Supabase
+Made with Python • PyTorch • Flask • Hugging Face • Supabase
 
 </div>
