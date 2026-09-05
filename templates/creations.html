@@ -428,7 +428,7 @@
                     <div class="creation-image-wrapper">
 
                         <img
-                            src="{{ url_for('send_image', filename=generation.generated_image_path) }}"
+                            src="{{ generation.generated_image_url }}"
                             alt="Generated creation"
                             class="creation-image"
                             loading="lazy"
@@ -463,7 +463,7 @@
                         <div class="creation-actions">
 
                             <a
-                                href="{{ url_for('send_image', filename=generation.generated_image_path) }}"
+                                href="{{ generation.generated_image_url }}"
                                 target="_blank"
                                 class="action-button"
                             >
@@ -472,7 +472,7 @@
                             </a>
 
                             <a
-                                href="{{ url_for('send_image', filename=generation.generated_image_path) }}"
+                                href="{{ generation.generated_image_url }}"
                                 download
                                 class="action-button"
                             >

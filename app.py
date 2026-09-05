@@ -824,6 +824,170 @@ def style_transfer_page():
 
 
 # ==========================================================
+# SAVE HF GENERATED IMAGE
+# ==========================================================
+
+@app.route('/save-generation', methods=['POST'])
+def save_generation():
+
+    if not is_logged_in():
+        return {
+            "success": False,
+            "error": "Please sign in to save your creation."
+        }, 401
+
+    generated_file = request.files.get('generated_image')
+    content_file = request.files.get('content_image')
+    style_file = request.files.get('style_image')
+    alpha = request.form.get('alpha', '1.0')
+
+    if not generated_file:
+        return {
+            "success": False,
+            "error": "Generated image was not received."
+        }, 400
+
+    if not content_file or not style_file:
+        return {
+            "success": False,
+            "error": "Content and style images are required."
+        }, 400
+
+    try:
+
+        user_id = session['user_id']
+
+        alpha = float(alpha)
+
+        # --------------------------------------------------
+        # Create unique filenames
+        # --------------------------------------------------
+
+        generation_id = uuid.uuid4().hex
+
+        content_ext = os.path.splitext(
+            secure_filename(content_file.filename)
+        )[1].lower() or ".png"
+
+        style_ext = os.path.splitext(
+            secure_filename(style_file.filename)
+        )[1].lower() or ".png"
+
+        generated_ext = ".png"
+
+        content_filename = (
+            f"content_{generation_id}{content_ext}"
+        )
+
+        style_filename = (
+            f"style_{generation_id}{style_ext}"
+        )
+
+        generated_filename = (
+            f"generated_{generation_id}{generated_ext}"
+        )
+
+        # --------------------------------------------------
+        # Supabase Storage paths
+        # --------------------------------------------------
+
+        content_storage_path = (
+            f"{user_id}/content/{content_filename}"
+        )
+
+        style_storage_path = (
+            f"{user_id}/style/{style_filename}"
+        )
+
+        generated_storage_path = (
+            f"{user_id}/generated/{generated_filename}"
+        )
+
+        # --------------------------------------------------
+        # Read uploaded files
+        # --------------------------------------------------
+
+        content_bytes = content_file.read()
+        style_bytes = style_file.read()
+        generated_bytes = generated_file.read()
+
+        # --------------------------------------------------
+        # Upload content image
+        # --------------------------------------------------
+
+        supabase_admin.storage.from_(
+            "styleforge-images"
+        ).upload(
+            content_storage_path,
+            content_bytes,
+            {
+                "content-type": (
+                    content_file.mimetype
+                    or "image/png"
+                ),
+                "upsert": "true"
+            }
+        )
+
+        # --------------------------------------------------
+        # Upload style image
+        # --------------------------------------------------
+
+        supabase_admin.storage.from_(
+            "styleforge-images"
+        ).upload(
+            style_storage_path,
+            style_bytes,
+            {
+                "content-type": (
+                    style_file.mimetype
+                    or "image/png"
+                ),
+                "upsert": "true"
+            }
+        )
+
+        # --------------------------------------------------
+        # Upload generated image
+        # --------------------------------------------------
+
+        supabase_admin.storage.from_(
+            "styleforge-images"
+        ).upload(
+            generated_storage_path,
+            generated_bytes,
+            {
+                "content-type": "image/png",
+                "upsert": "true"
+            }
+        )
+
+        # --------------------------------------------------
+        # Save generation record
+        # --------------------------------------------------
+
+        supabase_admin.table('generations').insert({
+            "user_id": user_id,
+            "content_image_path": content_storage_path,
+            "style_image_path": style_storage_path,
+            "generated_image_path": generated_storage_path,
+            "alpha": alpha
+        }).execute()
+
+        return {
+            "success": True,
+            "generated_image_path": generated_storage_path
+        }
+
+    except Exception as e:
+
+        return {
+            "success": False,
+            "error": str(e)
+        }, 500
+
+
+# ==========================================================
 # MY CREATIONS ROUTE
 # ==========================================================
 
@@ -851,6 +1015,19 @@ def creations():
         )
 
         generations = generations_response.data or []
+
+        # Generate public URLs for images stored in Supabase Storage.
+        for generation in generations:
+            generated_path = generation.get(
+                "generated_image_path"
+            )
+
+            if generated_path:
+                generation["generated_image_url"] = (
+                    supabase_admin.storage
+                    .from_("styleforge-images")
+                    .get_public_url(generated_path)
+                )
 
     except Exception as e:
         generations = []

@@ -782,34 +782,23 @@
 
 <script>
 
-    /* --------------------------------
-       Image Preview
-    -------------------------------- */
-
     function setupImagePreview(inputId, previewId, contentId, nameId) {
-
         const input = document.getElementById(inputId);
         const preview = document.getElementById(previewId);
         const uploadContent = document.getElementById(contentId);
         const imageName = document.getElementById(nameId);
 
         input.addEventListener("change", function () {
-
             const file = this.files[0];
 
-            if (!file) {
-                return;
-            }
+            if (!file) return;
 
             const reader = new FileReader();
 
             reader.onload = function (event) {
-
                 preview.src = event.target.result;
-
                 preview.style.display = "block";
                 uploadContent.style.display = "none";
-
                 imageName.textContent = file.name;
                 imageName.style.display = "block";
             };
@@ -817,7 +806,6 @@
             reader.readAsDataURL(file);
         });
     }
-
 
     setupImagePreview(
         "contentInput",
@@ -834,54 +822,32 @@
     );
 
 
-    /* --------------------------------
-       Allow changing uploaded images
-    -------------------------------- */
+    const contentInput = document.getElementById("contentInput");
+    const styleInput = document.getElementById("styleInput");
 
-    const contentInput =
-        document.getElementById("contentInput");
-
-    const styleInput =
-        document.getElementById("styleInput");
-
-    const contentPreview =
-        document.getElementById("contentPreview");
-
-    const stylePreview =
-        document.getElementById("stylePreview");
-
+    const contentPreview = document.getElementById("contentPreview");
+    const stylePreview = document.getElementById("stylePreview");
 
     contentPreview.addEventListener("click", function () {
         contentInput.click();
     });
-
 
     stylePreview.addEventListener("click", function () {
         styleInput.click();
     });
 
 
-    /* --------------------------------
-       Alpha Slider
-    -------------------------------- */
-
     const alphaSlider = document.getElementById("alphaSlider");
     const alphaValue = document.getElementById("alphaValue");
 
     function updateAlpha() {
-
         alphaValue.textContent =
             parseFloat(alphaSlider.value).toFixed(2);
     }
 
     alphaSlider.addEventListener("input", updateAlpha);
-
     updateAlpha();
 
-
-    /* --------------------------------
-       Processing Animation
-    -------------------------------- */
 
     const uploadForm = document.getElementById("uploadForm");
     const processingOverlay =
@@ -891,47 +857,243 @@
         document.getElementById("transferButton");
 
 
-    uploadForm.addEventListener("submit", function (event) {
-
-        const contentInput =
-            document.getElementById("contentInput");
-
-        const styleInput =
-            document.getElementById("styleInput");
+    let hfClient = null;
+    let handleFile = null;
 
 
-        const contentPath = document.querySelector(
-            'input[name="content_path"]'
+    async function loadHFClient() {
+
+        const module = await import(
+            "https://cdn.jsdelivr.net/npm/@gradio/client/+esm"
         );
 
-        const stylePath = document.querySelector(
-            'input[name="style_path"]'
+        handleFile = module.handle_file;
+
+        return module.Client;
+    }
+
+
+    async function getHFClient() {
+
+        if (hfClient) {
+            return hfClient;
+        }
+
+        const Client = await loadHFClient();
+
+        hfClient = await Client.connect(
+            "dhruv-ai-05/stylomera-nst"
         );
 
-        if (
-            !contentInput.files.length && !contentPath.value
-        ) {
+        return hfClient;
+    }
+
+
+    function displayGeneratedImage(imageSource) {
+
+        let resultSection =
+            document.getElementById("generatedResult");
+
+        if (!resultSection) {
+
+            resultSection = document.createElement("section");
+
+            resultSection.className = "result-section";
+            resultSection.id = "generatedResult";
+
+            resultSection.innerHTML = `
+                <div class="page-heading mb-4">
+                    <div class="eyebrow">
+                        GENERATED RESULT
+                    </div>
+
+                    <h2 class="h3">
+                        YOUR CREATION
+                    </h2>
+                </div>
+
+                <div class="result-card">
+
+                    <img
+                        id="generatedImage"
+                        src=""
+                        alt="Generated style transfer result"
+                        class="result-image"
+                    >
+
+                    <div class="text-center">
+
+                        <a
+                            id="downloadGeneratedImage"
+                            href="#"
+                            download="stylomera-result.png"
+                            class="download-button"
+                        >
+                            <i class="fa-solid fa-download"></i>
+                            Download Result
+                        </a>
+
+                    </div>
+
+                </div>
+            `;
+
+            document
+                .querySelector("main.main-container")
+                .appendChild(resultSection);
+        }
+
+        const image =
+            document.getElementById("generatedImage");
+
+        const download =
+            document.getElementById("downloadGeneratedImage");
+
+        image.src = imageSource;
+        download.href = imageSource;
+
+        resultSection.scrollIntoView({
+            behavior: "smooth",
+            block: "start"
+        });
+    }
+
+
+    uploadForm.addEventListener("submit", async function (event) {
+
+        event.preventDefault();
+
+        const contentFile = contentInput.files[0];
+        const styleFile = styleInput.files[0];
+
+        if (!contentFile) {
+            alert("Please upload a content image.");
             return;
         }
 
-        if (
-            !styleInput.files.length && !stylePath.value
-        ) {
+        if (!styleFile) {
+            alert("Please upload a style image.");
             return;
         }
-
 
         processingOverlay.style.display = "flex";
-
         transferButton.disabled = true;
-
         transferButton.value = "PROCESSING...";
+
+        try {
+
+            const client = await getHFClient();
+
+            const result = await client.predict(
+                "/neural_style_transfer",
+                [
+                    handleFile(contentFile),
+                    handleFile(styleFile),
+                    parseFloat(alphaSlider.value)
+                ]
+            );
+
+            const generated = result.data[0];
+
+            let imageUrl;
+
+            if (typeof generated === "string") {
+                imageUrl = generated;
+            } else if (generated && generated.url) {
+                imageUrl = generated.url;
+            } else if (generated && generated.path) {
+                imageUrl = generated.path;
+            } else {
+                throw new Error(
+                    "Hugging Face returned an unexpected image format."
+                );
+            }
+
+            /* Hide loading overlay as soon as generation is complete */
+            processingOverlay.style.display = "none";
+
+            displayGeneratedImage(imageUrl);
+
+            /* --------------------------------
+               Save generation to Render
+            -------------------------------- */
+
+            const generatedResponse =
+                await fetch(imageUrl);
+
+            if (!generatedResponse.ok) {
+                throw new Error(
+                    "Unable to retrieve the generated image from Hugging Face."
+                );
+            }
+
+            const generatedBlob =
+                await generatedResponse.blob();
+
+            const saveFormData =
+                new FormData();
+
+            saveFormData.append(
+                "generated_image",
+                generatedBlob,
+                "stylomera-result.png"
+            );
+
+            saveFormData.append(
+                "content_image",
+                contentFile,
+                contentFile.name
+            );
+
+            saveFormData.append(
+                "style_image",
+                styleFile,
+                styleFile.name
+            );
+
+            saveFormData.append(
+                "alpha",
+                alphaSlider.value
+            );
+
+            const saveResponse =
+                await fetch(
+                    "{{ url_for('save_generation') }}",
+                    {
+                        method: "POST",
+                        body: saveFormData
+                    }
+                );
+
+            const saveResult =
+                await saveResponse.json();
+
+            if (!saveResponse.ok || !saveResult.success) {
+                throw new Error(
+                    saveResult.error ||
+                    "Unable to save your creation."
+                );
+            }
+
+        } catch (error) {
+
+            console.error(
+                "Hugging Face style transfer error:",
+                error
+            );
+
+            alert(
+                "Unable to create the image right now. Please try again."
+            );
+
+        } finally {
+
+            processingOverlay.style.display = "none";
+            transferButton.disabled = false;
+            transferButton.value = "TRANSFER STYLE";
+        }
     });
 
-
-    /* --------------------------------
-       Neural Background
-    -------------------------------- */
 
     const canvas = document.getElementById("neuralCanvas");
     const ctx = canvas.getContext("2d");
@@ -941,7 +1103,6 @@
 
 
     function resizeCanvas() {
-
         canvas.width = window.innerWidth;
         canvas.height = window.innerHeight;
     }
@@ -976,14 +1137,12 @@
             canvas.height
         );
 
-
         for (let i = 0; i < nodes.length; i++) {
 
             const node = nodes[i];
 
             node.x += node.vx;
             node.y += node.vy;
-
 
             if (node.x < 0 || node.x > canvas.width) {
                 node.vx *= -1;
@@ -992,7 +1151,6 @@
             if (node.y < 0 || node.y > canvas.height) {
                 node.vy *= -1;
             }
-
 
             ctx.beginPath();
 
@@ -1005,9 +1163,7 @@
             );
 
             ctx.fillStyle = "rgba(150, 130, 255, 0.55)";
-
             ctx.fill();
-
 
             for (let j = i + 1; j < nodes.length; j++) {
 
@@ -1019,20 +1175,17 @@
                 const distance =
                     Math.sqrt(dx * dx + dy * dy);
 
-
                 if (distance < 130) {
 
                     ctx.beginPath();
 
                     ctx.moveTo(node.x, node.y);
-
                     ctx.lineTo(other.x, other.y);
 
                     ctx.strokeStyle =
                         `rgba(150, 130, 255, ${0.12 * (1 - distance / 130)})`;
 
                     ctx.lineWidth = 0.5;
-
                     ctx.stroke();
                 }
             }
@@ -1049,27 +1202,29 @@
 
 
     window.addEventListener("resize", function () {
-
         resizeCanvas();
         createNodes();
-
     });
 
 
-window.addEventListener("load", function () {
+    window.addEventListener("load", function () {
 
-    const generatedResult = document.getElementById("generatedResult");
+        const generatedResult =
+            document.getElementById("generatedResult");
 
-    if (generatedResult) {
-        setTimeout(function () {
-            generatedResult.scrollIntoView({
-                behavior: "smooth",
-                block: "start"
-            });
-        }, 300);
-    }
+        if (generatedResult) {
 
-});
+            setTimeout(function () {
+
+                generatedResult.scrollIntoView({
+                    behavior: "smooth",
+                    block: "start"
+                });
+
+            }, 300);
+        }
+
+    });
 
 </script>
 
