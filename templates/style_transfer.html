@@ -900,9 +900,22 @@
             document.getElementById("styleInput");
 
 
+        const contentPath = document.querySelector(
+            'input[name="content_path"]'
+        );
+
+        const stylePath = document.querySelector(
+            'input[name="style_path"]'
+        );
+
         if (
-            !contentInput.files.length ||
-            !styleInput.files.length
+            !contentInput.files.length && !contentPath.value
+        ) {
+            return;
+        }
+
+        if (
+            !styleInput.files.length && !stylePath.value
         ) {
             return;
         }

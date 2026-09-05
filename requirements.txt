@@ -4,8 +4,11 @@ Flask-Bootstrap
 Werkzeug
 WTForms
 Pillow
-torch
-torchvision
+numpy
+torch==2.14.0
+torchvision==0.29.0
+tqdm
 supabase
 httpx
 python-dotenv
+gunicorn
