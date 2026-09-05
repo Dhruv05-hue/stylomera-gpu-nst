@@ -88,32 +88,32 @@ Behind the scenes, Stylomera combines:
 
 Stylomera follows the **Adaptive Instance Normalization (AdaIN)** Neural Style Transfer pipeline.
 
-### 🔹 1. VGG-19 Feature Extraction
+## 🔹 1. VGG-19 Feature Extraction
 
 VGG-19 is used as a feature extractor for both images.
 
 - 🖼️ Content features capture the structural information of the content image.
 - 🎨 Style features capture the visual characteristics of the style image.
 
-### 🔹 2. Adaptive Instance Normalization
+## 🔹 2. Adaptive Instance Normalization
 
 AdaIN transfers the statistical characteristics of the style features into the content features.
 
 In simple terms:
 
 > 🖼️ **Content provides the structure.**
->
+
 > 🎨 **Style provides the appearance.**
 
 AdaIN aligns the channel-wise mean and variance of the content features with those of the style features.
 
-### 🔹 3. Trained Decoder
+## 🔹 3. Trained Decoder
 
 The transformed feature representation is passed through a trained decoder.
 
 The decoder reconstructs the transformed representation into the final RGB image.
 
-### 🔹 4. Alpha Blending
+## 🔹 4. Alpha Blending
 
 The style intensity is controlled using an **alpha parameter**.
 
@@ -158,7 +158,7 @@ The optimized implementation separates the web application from the GPU-intensiv
 
 **User Browser**
 
-↓  
+↓
 
 **Render**
 
@@ -166,7 +166,7 @@ The optimized implementation separates the web application from the GPU-intensiv
 - Application logic
 - Save generation
 
-↓  
+↓
 
 **Hugging Face ZeroGPU**
 
@@ -175,15 +175,15 @@ The optimized implementation separates the web application from the GPU-intensiv
 - Trained Decoder
 - GPU inference
 
-↓  
+↓
 
 **Generated Image**
 
-↓  
+↓
 
 **Render**
 
-↓  
+↓
 
 **Supabase**
 
@@ -211,23 +211,23 @@ One of the main engineering challenges in Stylomera was the computational cost o
 
 **Render CPU**
 
-↓  
+↓
 
 **PyTorch**
 
-↓  
+↓
 
 **VGG-19**
 
-↓  
+↓
 
 **AdaIN**
 
-↓  
+↓
 
 **Decoder**
 
-↓  
+↓
 
 **Generated Image**
 
@@ -311,47 +311,50 @@ This makes the system more suitable for resource-constrained web deployments.
 
 # 📁 Project Architecture
 
-```text
-NST_Project/
-│
-├── 📂 content_data/
-├── 📂 style_data/
-├── 📂 examples/
-│
-├── 📂 experiment/
-│   ├── 📂 exp2/
-│   ├── 📂 exp3/
-│   ├── 📂 experiment1/
-│   ├── 📂 trial/
-│   │
-│   └── 📂 trained_decoder/
-│       ├── 🧠 decoder_final.pth
-│       ├── 📄 options.txt
-│       └── 🖼️ sample_iter_*.png
-│
-├── 📂 static/
-│   └── 📂 uploads/
-│
-├── 📂 templates/
-│   ├── 🎨 creations.html
-│   ├── 🏠 index.html
-│   ├── 🔐 login.html
-│   ├── 📝 signup.html
-│   ├── ✉️ verify_otp.html
-│   └── 🖼️ style_transfer.html
-│
-├── 📂 utils/
-│   ├── 🧠 models.py
-│   └── 🔧 utils.py
-│
-├── 🐍 app.py
-├── 🔐 supabase_client.py
-├── 🧠 train.py
-├── 🧠 vgg_normalised.pth
-├── 📦 requirements.txt
-├── 🔧 .env.example
-├── 🚫 .gitignore
-└── 📖 README.md
+    NST_Project/
+    │
+    ├── 📂 content_data/
+    ├── 📂 style_data/
+    ├── 📂 examples/
+    │
+    ├── 📂 experiment/
+    │   ├── 📂 exp2/
+    │   ├── 📂 exp3/
+    │   ├── 📂 experiment1/
+    │   ├── 📂 trial/
+    │   │
+    │   └── 📂 trained_decoder/
+    │       ├── 🧠 decoder_final.pth
+    │       ├── 📄 options.txt
+    │       └── 🖼️ sample_iter_*.png
+    │
+    ├── 📂 static/
+    │   └── 📂 uploads/
+    │
+    ├── 📂 templates/
+    │   ├── 🎨 creations.html
+    │   ├── 🏠 index.html
+    │   ├── 🔐 login.html
+    │   ├── 📝 signup.html
+    │   ├── ✉️ verify_otp.html
+    │   └── 🖼️ style_transfer.html
+    │
+    ├── 📂 utils/
+    │   ├── 🧠 models.py
+    │   └── 🔧 utils.py
+    │
+    ├── 🐍 app.py
+    ├── 🔐 supabase_client.py
+    ├── 🧠 train.py
+    ├── 🧠 vgg_normalised.pth
+    ├── 📦 requirements.txt
+    ├── 🔧 .env.example
+    ├── 🚫 .gitignore
+    └── 📖 README.md
+
+---
+
+# 🚀 Getting Started
 
 ## 1️⃣ Clone the Repository
 
