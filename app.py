@@ -2,7 +2,7 @@ import os
 import uuid
 import secrets
 import hashlib
-import smtplib
+import httpx
 from datetime import datetime, timedelta, timezone
 from email.message import EmailMessage
 
@@ -59,30 +59,58 @@ def generate_otp():
 
 
 def send_otp_email(email, otp):
-    smtp_server = os.getenv("SMTP_SERVER", "smtp.gmail.com")
-    smtp_port = int(os.getenv("SMTP_PORT", "587"))
-    smtp_email = os.getenv("SMTP_EMAIL")
-    smtp_password = os.getenv("SMTP_PASSWORD")
+    brevo_api_key = os.getenv("BREVO_API_KEY")
+    sender_email = os.getenv("BREVO_SENDER_EMAIL")
+    sender_name = os.getenv("BREVO_SENDER_NAME", "Stylomera")
 
-    if not smtp_email or not smtp_password:
-        raise RuntimeError(
-            "SMTP_EMAIL and SMTP_PASSWORD are not configured."
-        )
+    if not brevo_api_key:
+        raise Exception("BREVO_API_KEY is not configured.")
 
-    message = EmailMessage()
-    message["Subject"] = "Stylomera Email Verification Code"
-    message["From"] = smtp_email
-    message["To"] = email
-    message.set_content(
-        f"Your Stylomera verification code is: {otp}\n\n"
-        f"This code will expire in {OTP_EXPIRY_MINUTES} minutes.\n"
-        "If you did not create a Stylomera account, you can ignore this email."
+    if not sender_email:
+        raise Exception("BREVO_SENDER_EMAIL is not configured.")
+
+    response = httpx.post(
+        "https://api.brevo.com/v3/smtp/email",
+        headers={
+            "accept": "application/json",
+            "api-key": brevo_api_key,
+            "content-type": "application/json"
+        },
+        json={
+            "sender": {
+                "name": sender_name,
+                "email": sender_email
+            },
+            "to": [
+                {
+                    "email": email
+                }
+            ],
+            "subject": "Stylomera Email Verification Code",
+            "textContent": (
+                f"Your Stylomera verification code is: {otp}\n\n"
+                f"This code will expire in {OTP_EXPIRY_MINUTES} minutes.\n"
+                "If you did not create a Stylomera account, "
+                "you can ignore this email."
+            )
+        },
+        timeout=20
     )
 
-    with smtplib.SMTP(smtp_server, smtp_port, timeout=20) as server:
-        server.starttls()
-        server.login(smtp_email, smtp_password)
-        server.send_message(message)
+    if not response.is_success:
+        try:
+            error_data = response.json()
+            error_message = error_data.get(
+                "message",
+                response.text
+            )
+        except Exception:
+            error_message = response.text
+
+        raise Exception(
+            f"Brevo email error {response.status_code}: "
+            f"{error_message}"
+        )
 
 
 def is_otp_valid(otp_record, otp):
