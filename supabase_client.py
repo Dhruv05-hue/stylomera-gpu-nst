@@ -46,6 +46,21 @@ def supabase_auth_request(endpoint, data):
         timeout=20
     )
 
-    response.raise_for_status()
+    if not response.is_success:
+        try:
+            error_data = response.json()
+            error_message = error_data.get(
+                "msg",
+                error_data.get(
+                    "message",
+                    error_data.get("error_description", response.text)
+                )
+            )
+        except Exception:
+            error_message = response.text
+
+        raise Exception(
+            f"Supabase Auth error {response.status_code}: {error_message}"
+        )
 
     return response.json()
